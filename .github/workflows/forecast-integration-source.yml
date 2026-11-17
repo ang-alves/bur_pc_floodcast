@@ -1,0 +1,30 @@
+name: Pinned source for forecast integration
+on:
+  push:
+    branches: [ffw/forecast-integration-20261117]
+    paths: [.github/workflows/forecast-integration-source.yml]
+permissions:
+  contents: read
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Export exact upstream commit without executing its code
+        shell: bash
+        run: |
+          set -euo pipefail
+          git init source
+          git -C source fetch --depth=1 https://github.com/ue-hydro/bur_pc_floodcast.git 39cd5511a0f85d778e11ec85e0289364449c4b15
+          test "$(git -C source rev-parse FETCH_HEAD)" = 39cd5511a0f85d778e11ec85e0289364449c4b15
+          git -C source archive --format=zip --prefix=bur_pc_floodcast/ FETCH_HEAD > bur_pc_floodcast_base.zip
+          sha256sum bur_pc_floodcast_base.zip > bur_pc_floodcast_base.zip.sha256
+      - name: Retain source archive
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: floodcast-pinned-base
+          path: |
+            bur_pc_floodcast_base.zip
+            bur_pc_floodcast_base.zip.sha256
+          if-no-files-found: error
+          retention-days: 3
