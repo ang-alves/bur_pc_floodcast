@@ -8,23 +8,35 @@ permissions:
 jobs:
   export:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
-      - name: Export exact upstream commit without executing its code
+      - name: Export pinned SYMFLUENCE package without executing its code
         shell: bash
         run: |
           set -euo pipefail
           git init source
-          git -C source fetch --depth=1 https://github.com/ue-hydro/bur_pc_floodcast.git 39cd5511a0f85d778e11ec85e0289364449c4b15
-          test "$(git -C source rev-parse FETCH_HEAD)" = 39cd5511a0f85d778e11ec85e0289364449c4b15
-          git -C source archive --format=zip --prefix=bur_pc_floodcast/ FETCH_HEAD > bur_pc_floodcast_base.zip
-          sha256sum bur_pc_floodcast_base.zip > bur_pc_floodcast_base.zip.sha256
-      - name: Retain source archive
+          git -C source fetch --depth=1 https://github.com/symfluence-org/SYMFLUENCE.git df9b6447080b85ec6566dc7ad4ed901a623ad0bc
+          test "$(git -C source rev-parse FETCH_HEAD)" = df9b6447080b85ec6566dc7ad4ed901a623ad0bc
+          git -C source archive --format=zip --prefix=SYMFLUENCE/ FETCH_HEAD src pyproject.toml LICENSE tests > symfluence_pinned_source.zip
+          sha256sum symfluence_pinned_source.zip > symfluence_pinned_source.zip.sha256
+          git -C source ls-tree -r FETCH_HEAD > symfluence_tree.txt
+      - name: Download optional Linux wheels for offline checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir wheels
+          python -m pip download --only-binary=:all: --dest wheels ruff eccodes eccodeslib eckitlib findlibs attrs
+          python -m pip download --only-binary=:all: --python-version 3.13 --platform manylinux_2_17_x86_64 --implementation cp --abi cp313 --dest wheels netCDF4 cftime numpy cffi pycparser certifi
+          sha256sum wheels/* > wheels.sha256
+      - name: Retain sources and dependency wheels
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: floodcast-pinned-base
+          name: symfluence-source-and-verification-wheels
           path: |
-            bur_pc_floodcast_base.zip
-            bur_pc_floodcast_base.zip.sha256
+            symfluence_pinned_source.zip
+            symfluence_pinned_source.zip.sha256
+            symfluence_tree.txt
+            wheels
+            wheels.sha256
           if-no-files-found: error
           retention-days: 3
