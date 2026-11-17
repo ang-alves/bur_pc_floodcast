@@ -10,19 +10,18 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Download Python 3.13 verification dependencies
+      - name: Download remaining verification dependencies
         shell: bash
         run: |
           set -euo pipefail
           mkdir wheels
-          python -m pip download --only-binary=:all: --python-version 3.13 --platform manylinux_2_28_x86_64 --platform manylinux_2_17_x86_64 --implementation cp --abi cp313 --dest wheels eccodes eccodeslib eckitlib findlibs attrs
-          python -m pip download --no-deps --dest wheels easymore
-          python -m pip download --no-deps --only-binary=:all: --dest wheels cdsapi ecmwf-opendata
+          python -m pip download --no-deps --dest wheels h5netcdf geovoronoi multiurl ecmwf-datastores-client
+          python -m pip download --only-binary=:all: --python-version 3.13 --platform manylinux_2_28_x86_64 --platform manylinux_2_17_x86_64 --implementation cp --abi cp313 --dest wheels rtree
           sha256sum wheels/* > wheels.sha256
       - name: Retain dependency wheels
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: python313-remapping-verification
+          name: netcdf-client-verification
           path: |
             wheels
             wheels.sha256
