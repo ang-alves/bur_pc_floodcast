@@ -10,32 +10,20 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Export pinned SYMFLUENCE package without executing its code
-        shell: bash
-        run: |
-          set -euo pipefail
-          git init source
-          git -C source fetch --depth=1 https://github.com/symfluence-org/SYMFLUENCE.git df9b6447080b85ec6566dc7ad4ed901a623ad0bc
-          test "$(git -C source rev-parse FETCH_HEAD)" = df9b6447080b85ec6566dc7ad4ed901a623ad0bc
-          git -C source archive --format=zip --prefix=SYMFLUENCE/ FETCH_HEAD src pyproject.toml LICENSE tests > symfluence_pinned_source.zip
-          sha256sum symfluence_pinned_source.zip > symfluence_pinned_source.zip.sha256
-          git -C source ls-tree -r FETCH_HEAD > symfluence_tree.txt
-      - name: Download optional Linux wheels for offline checks
+      - name: Download Python 3.13 verification dependencies
         shell: bash
         run: |
           set -euo pipefail
           mkdir wheels
-          python -m pip download --only-binary=:all: --dest wheels ruff eccodes eccodeslib eckitlib findlibs attrs
-          python -m pip download --only-binary=:all: --python-version 3.13 --platform manylinux_2_17_x86_64 --implementation cp --abi cp313 --dest wheels netCDF4 cftime numpy cffi pycparser certifi
+          python -m pip download --only-binary=:all: --python-version 3.13 --platform manylinux_2_28_x86_64 --platform manylinux_2_17_x86_64 --implementation cp --abi cp313 --dest wheels eccodes eccodeslib eckitlib findlibs attrs
+          python -m pip download --no-deps --dest wheels easymore
+          python -m pip download --no-deps --only-binary=:all: --dest wheels cdsapi ecmwf-opendata
           sha256sum wheels/* > wheels.sha256
-      - name: Retain sources and dependency wheels
+      - name: Retain dependency wheels
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: symfluence-source-and-verification-wheels
+          name: python313-remapping-verification
           path: |
-            symfluence_pinned_source.zip
-            symfluence_pinned_source.zip.sha256
-            symfluence_tree.txt
             wheels
             wheels.sha256
           if-no-files-found: error
