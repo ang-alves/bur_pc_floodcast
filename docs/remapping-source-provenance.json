@@ -1,0 +1,118 @@
+{
+  "repository": "https://github.com/symfluence-org/SYMFLUENCE",
+  "commit": "df9b6447080b85ec6566dc7ad4ed901a623ad0bc",
+  "files": [
+    {
+      "source": "src/symfluence/data/preprocessing/resampling/__init__.py",
+      "port": "src/floodcast/data/preprocessing/resampling/__init__.py",
+      "git_blob": "f99c5e379a0a140806fd0f4991562a8005cf5c0e",
+      "source_sha256": "fb9dc3bffd96e079ed6d7fa179ec31813acab2834775b590f2eb12723304b15d",
+      "port_sha256": "c47651a860d6a2712753ae10b85042aea469f0acbc7f84831a662b4c8d217d62",
+      "classification": "adapted_package_exports"
+    },
+    {
+      "source": "src/symfluence/data/preprocessing/resampling/elevation_calculator.py",
+      "port": "src/floodcast/data/preprocessing/resampling/elevation_calculator.py",
+      "git_blob": "7b47607d9b07f051fe6a47e9a8cb0a9c5014e3e8",
+      "source_sha256": "26b8a5f546142453a82fb608d7c6c6bb6329a44fb4c73aa36841574dee83cbd0",
+      "port_sha256": "359cab6575d125ed3334c3d993c775bf8fe94cb568a0ca96cff65ddf233f120b",
+      "classification": "ported_complete_module"
+    },
+    {
+      "source": "src/symfluence/data/preprocessing/resampling/file_processor.py",
+      "port": "src/floodcast/data/preprocessing/resampling/file_processor.py",
+      "git_blob": "2b9e2d4c149603fb06c6d8423311b0a3894b90f4",
+      "source_sha256": "b15fd6b33ced6ece082a9b6f736571f4b9edcbf3f62b3fa88899543fc16ba4a5",
+      "port_sha256": "fbcb7be9bb37661632fe44321442c729e78cb800ea0a42a46202ef4cbb386e76",
+      "classification": "ported_complete_module"
+    },
+    {
+      "source": "src/symfluence/data/preprocessing/resampling/file_validator.py",
+      "port": "src/floodcast/data/preprocessing/resampling/file_validator.py",
+      "git_blob": "6485c651277d8b927c82937a3f6d3069b7880610",
+      "source_sha256": "c0b509fa7295fc78118bc1de19befb2f037ff714cd7112e369af8a9e1dfd678c",
+      "port_sha256": "81129adbf181c233f22378095c42b37cc72f5c55ae11ed6eb710979f9c058782",
+      "classification": "ported_complete_module"
+    },
+    {
+      "source": "src/symfluence/data/preprocessing/resampling/geometry_validator.py",
+      "port": "src/floodcast/data/preprocessing/resampling/geometry_validator.py",
+      "git_blob": "96dab31c73dbcbccbd1599c246f1d0fbf9056873",
+      "source_sha256": "c26ffc829fc28850ec2b1c0eb8e928ee4807b9ba9fe37d571e4309fdaff820a7",
+      "port_sha256": "12e336c316880d1890ab2f3918a356e2f1c4f159f66409825c298746da43084d",
+      "classification": "ported_complete_module"
+    },
+    {
+      "source": "src/symfluence/data/preprocessing/resampling/point_scale_extractor.py",
+      "port": "src/floodcast/data/preprocessing/resampling/point_scale_extractor.py",
+      "git_blob": "4eec080bec930ab9d1e5620770fa3e4c3df91966",
+      "source_sha256": "365cc3b4ba429258e629b4e978b16b836f96eaf7525053b1c126eeceeaa68a21",
+      "port_sha256": "e497c1ed20431d2d6d5907c31525518d4e3b010f832606a9a4531d9ad1fe63bb",
+      "classification": "ported_complete_module"
+    },
+    {
+      "source": "src/symfluence/data/preprocessing/resampling/shapefile_processor.py",
+      "port": "src/floodcast/data/preprocessing/resampling/shapefile_processor.py",
+      "git_blob": "41af0d5542d49bc44496e326613187952574a892",
+      "source_sha256": "1475846129dadb4659bdea0cb17d102e95fb6fea32ba9f035aee9534388e7a6f",
+      "port_sha256": "9c0cf425926c085b2daf1f5ff65b245b833e119179aaa90132e5675ccc1641bd",
+      "classification": "ported_complete_module"
+    },
+    {
+      "source": "src/symfluence/data/preprocessing/resampling/weight_applier.py",
+      "port": "src/floodcast/data/preprocessing/resampling/weight_applier.py",
+      "git_blob": "afbb8d12b4a0e98eef232cc317b0c3625f8997e4",
+      "source_sha256": "430526a3198ed933d0b327ed5e164ce76d7269775629dc11c230b0598817e877",
+      "port_sha256": "d2bd9f9d2745b6f7b4565193eb93a3c083b3056901008902125a0ee7a7d4c1c9",
+      "classification": "ported_complete_module"
+    },
+    {
+      "source": "src/symfluence/data/preprocessing/resampling/weight_generator.py",
+      "port": "src/floodcast/data/preprocessing/resampling/weight_generator.py",
+      "git_blob": "3d5d5899abece074e4516abd529f113f88e05a79",
+      "source_sha256": "a6373957c01a0976d5e092ef9dfa966f6d472a601f45470e2ceeb1628e3f0a5d",
+      "port_sha256": "de44752ef9b81abadea0cc5d914c8ab88b881b4b34765b52c58c4bf0ad19bbe4",
+      "classification": "ported_complete_module"
+    },
+    {
+      "source": "src/symfluence/data/preprocessing/cfif/__init__.py",
+      "port": "src/floodcast/data/preprocessing/cfif/__init__.py",
+      "git_blob": "366149a941649878918c92ef86d3953c6a90e49a",
+      "source_sha256": "b76bd34ac3651b333b207846efbc820bd5c023930ebc19d0e6bcc69c98bcb9bc",
+      "port_sha256": "2821df9b9cbc2a7efa81d06d26791cdcb716eea94dd66e2917c9a50da5e77d28",
+      "classification": "ported_complete_module"
+    },
+    {
+      "source": "src/symfluence/data/preprocessing/cfif/units.py",
+      "port": "src/floodcast/data/preprocessing/cfif/units.py",
+      "git_blob": "d7c092101b3a563f01e92103b9ecab7046d8097e",
+      "source_sha256": "b28fded6ecd8dc9585de78e5fc7d620489812070bced2ce5f91e196a1b6d7209",
+      "port_sha256": "868c1c2046d9d8a5fe957221b91cce6a6e18c6df46b5013d25fc2632ecc4bbe8",
+      "classification": "ported_complete_module"
+    },
+    {
+      "source": "src/symfluence/data/preprocessing/cfif/variables.py",
+      "port": "src/floodcast/data/preprocessing/cfif/variables.py",
+      "git_blob": "7a2c58204574236f2669e558fc0ccf2674482611",
+      "source_sha256": "ecdbdfee55375ea948b8a0438513ce89eb91c0cffdffe728d223fbe9018140ba",
+      "port_sha256": "ec3e0818612241c69616482f365418859f69b86ac1ff6ddf5020af174bba7550",
+      "classification": "ported_complete_module"
+    },
+    {
+      "source": "src/symfluence/core/mixins/config.py",
+      "port": "src/floodcast/data/preprocessing/resampling/_config.py",
+      "git_blob": "b6e220d051c9d42c718a1a66c044fdf9e5f1a58d",
+      "source_sha256": "cdca4b7d3605d46958ed8e1cf7a4755743c89edc693d5f2c894a9f4ad380a56d",
+      "port_sha256": "522a8f13a7ef2fbc9a71ed855e6de9aee1b0a80a2a4c0ecc3babc6ec75f6575a",
+      "classification": "ported_complete_module"
+    },
+    {
+      "source": "src/symfluence/core/hdf5_safety.py",
+      "port": "src/floodcast/data/preprocessing/resampling/_hdf5_safety.py",
+      "git_blob": "2436483ba6964373931d0b556e32a324dbefb35e",
+      "source_sha256": "53fec23aae9f28a7790ca4fd15480b4d5a2a97ff2e94804728a6b273724777e5",
+      "port_sha256": "40dc49f0d9a0810c8ab5873be58a9553699db827f2ceae80f332d04764a43035",
+      "classification": "ported_complete_module"
+    }
+  ]
+}

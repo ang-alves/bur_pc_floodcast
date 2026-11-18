@@ -1,0 +1,32 @@
+# Explicit sample cycle. Replace it with an AVAILABLE cycle before acquisition.
+# Open Data retains a rolling archive, not arbitrary historical dates.
+domain_id = "forecast_demo"
+data_root = "../../data"
+
+[forecast]
+product = "ifs_medium_range"
+cycle = "2026-11-17T00:00:00Z"
+originating_centre = "ecmwf"
+# Keep these explicit when selecting cycles beyond the reviewed timeline.
+expected_ifs_cycle = "50r1"
+distribution_profile = "open-data-2026-10-20"
+resolution = "0p25"
+source = "ecmwf"
+members = [0, 1]
+leads_per_request = 8
+
+[forecast.bbox]
+north = 42.0
+west = -10.0
+south = 36.0
+east = -6.0
+
+[forecast.fields]
+"2t" = [3, 6, 9, 12]
+"2d" = [3, 6, 9, 12]
+"10u" = [3, 6, 9, 12]
+"10v" = [3, 6, 9, 12]
+sp = [3, 6, 9, 12]
+tp = [3, 6, 9, 12]
+ssrd = [3, 6, 9, 12]
+strd = [3, 6, 9, 12]

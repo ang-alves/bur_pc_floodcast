@@ -1,0 +1,45 @@
+# Synthetic HRU example. Replace its geometry with your validated basin assets.
+# This date is intentionally fixed; Open Data availability is a rolling window.
+domain_id = "ifs_synthetic_example"
+data_root = "../../data"
+
+[forecast]
+product = "ifs_medium_range"
+cycle = "2026-11-17T00:00:00Z"
+members = [0, 1]
+resolution = "0p25"
+source = "ecmwf"
+expected_ifs_cycle = "50r1"
+distribution_profile = "open-data-2026-10-20"
+
+[forecast.bbox]
+north = 40.5
+west = -9.5
+south = 39.0
+east = -7.5
+
+[forecast.fields]
+"2t" = [0, 3, 6]
+"2d" = [0, 3, 6]
+"10u" = [0, 3, 6]
+"10v" = [0, 3, 6]
+sp = [0, 3, 6]
+tp = [3, 6]
+ssrd = [3, 6]
+strd = [3, 6]
+
+[remapping]
+target_path = "synthetic_hrus.geojson"
+hru_id_field = "hruId"
+geometry_version = "synthetic-example-v1"
+expected_hru_ids = [101, 202]
+minimum_coverage = 0.999999
+
+[model_forcing]
+model = "SUMMA"
+timestep_seconds = 3600
+start_lead_hour = 0
+end_lead_hour = 6
+instant_policy = "linear"
+interval_policy = "uniform"
+humidity_method = "symfluence_magnus_water"

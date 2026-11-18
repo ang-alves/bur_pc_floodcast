@@ -1,0 +1,30 @@
+{
+  "delivery_date": "2026-11-17",
+  "target_repository": "https://github.com/ue-hydro/bur_pc_floodcast",
+  "target_base_commit": "39cd5511a0f85d778e11ec85e0289364449c4b15",
+  "working_branch": "stage2/integrated-ecmwf-data",
+  "source_repository": "https://github.com/symfluence-org/SYMFLUENCE",
+  "source_commit": "df9b6447080b85ec6566dc7ad4ed901a623ad0bc",
+  "input_archives": [
+    {
+      "name": "ffw_symfluence_source_reuse_20261117.zip",
+      "sha256": "e4d04a7426453e90dd821c59d27e2b684a85234f8cfd465c014936585c798510"
+    },
+    {
+      "name": "ffw_ecmwf_forecast_data_20261117.zip",
+      "sha256": "f6e3d82bb76fee562edc88cc8c868346b9b443c13559e18b2d8e67551fa6b1b5"
+    },
+    {
+      "name": "ffw_stage2_foundation_20261117.zip",
+      "sha256": "192b8fcfe6dbf9d9cbb798a189819fe6f5eb859de1a4ec3bc80db829eb60d36b",
+      "role": "Reference foundation; installed through the forecast ZIP cumulative patch, not applied twice."
+    }
+  ],
+  "integration_method": "Full real Floodcast clone plus cumulative foundation/data patch, original-source export and reviewed runtime adaptations. Earlier fake Stage 1 support files were not used.",
+  "remote_write_performed": false,
+  "remote_access_observed": {
+    "pull": true,
+    "push": false
+  },
+  "archive_scope": "Complete source repository with integrated changes, original fixtures, new recorded data, vendor sources and verification reports; excludes .git, environments, generated builds and local result directories."
+}

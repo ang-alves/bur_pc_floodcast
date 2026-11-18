@@ -36,10 +36,13 @@ def main(argv: list[str] | None = None) -> int:
         args.output_format == "auto" and not sys.stdout.isatty()
     )
 
-    from floodcast.core.config import load_config
     from floodcast.core.errors import ErrorCode, FloodcastError
 
     try:
+        if args.command == "data":
+            return args.handler(args, json_output=json_output)
+        from floodcast.core.config import load_config
+
         config = load_config(
             args.config,
             runtime=args.runtime,

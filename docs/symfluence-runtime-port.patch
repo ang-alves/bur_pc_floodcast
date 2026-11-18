@@ -1,0 +1,3191 @@
+--- upstream/src/symfluence/data/preprocessing/resampling/__init__.py
++++ src/floodcast/data/preprocessing/resampling/__init__.py
+@@ -1,29 +1,25 @@
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ # Copyright (C) 2024-2026 SYMFLUENCE Team <dev@symfluence.org>
++"""Ported SYMFLUENCE resampling components; optional helpers load lazily."""
+ 
+-"""
+-Resampling Module
++from importlib import import_module
+ 
+-Components for forcing data remapping using EASYMORE.
+-"""
+-from __future__ import annotations
++_COMPONENTS = {
++    "ElevationCalculator": "elevation_calculator",
++    "FileProcessor": "file_processor",
++    "FileValidator": "file_validator",
++    "GeometryValidator": "geometry_validator",
++    "PointScaleForcingExtractor": "point_scale_extractor",
++    "RemappingWeightApplier": "weight_applier",
++    "RemappingWeightGenerator": "weight_generator",
++    "ShapefileProcessor": "shapefile_processor",
++}
++__all__ = list(_COMPONENTS)
+ 
+-from .elevation_calculator import ElevationCalculator
+-from .file_processor import FileProcessor
+-from .file_validator import FileValidator
+-from .geometry_validator import GeometryValidator
+-from .point_scale_extractor import PointScaleForcingExtractor
+-from .shapefile_processor import ShapefileProcessor
+-from .weight_applier import RemappingWeightApplier
+-from .weight_generator import RemappingWeightGenerator
+ 
+-__all__ = [
+-    'ElevationCalculator',
+-    'FileProcessor',
+-    'FileValidator',
+-    'GeometryValidator',
+-    'PointScaleForcingExtractor',
+-    'RemappingWeightApplier',
+-    'RemappingWeightGenerator',
+-    'ShapefileProcessor',
+-]
++def __getattr__(name):
++    if name not in _COMPONENTS:
++        raise AttributeError(name)
++    value = getattr(import_module("." + _COMPONENTS[name], __name__), name)
++    globals()[name] = value
++    return value
+--- upstream/src/symfluence/data/preprocessing/resampling/elevation_calculator.py
++++ src/floodcast/data/preprocessing/resampling/elevation_calculator.py
+@@ -6,11 +6,11 @@
+ 
+ Calculates elevation statistics for geometries using DEM data.
+ """
++
+ from __future__ import annotations
+ 
+ import logging
+ from pathlib import Path
+-from typing import List
+ 
+ import numpy as np
+ import rasterio
+@@ -39,7 +39,7 @@
+         """
+         self.logger = logger or logging.getLogger(__name__)
+ 
+-    def calculate(self, gdf, dem_path: Path, batch_size: int = 50) -> List[float]:
++    def calculate(self, gdf, dem_path: Path, batch_size: int = 50) -> list[float]:
+         """
+         Calculate elevation statistics for geometries.
+ 
+@@ -89,7 +89,7 @@
+                     iterator = tqdm(
+                         gdf_projected.geometry.iloc,
+                         total=len(gdf_projected),
+-                        desc="Calculating Elevation"
++                        desc="Calculating Elevation",
+                     )
+                 else:
+                     iterator = gdf_projected.geometry.iloc
+@@ -112,8 +112,9 @@
+                     except Exception as e:  # noqa: BLE001 — preprocessing resilience
+                         if idx < 5:
+                             self.logger.debug(
+-                                f"Error calculating elevation for geometry {idx}: {str(e)}"
+-                            , exc_info=True)
++                                f"Error calculating elevation for geometry {idx}: {str(e)}",
++                                exc_info=True,
++                            )
+ 
+             valid_count = sum(1 for elev in elevations if elev != -9999.0)
+             self.logger.info(
+@@ -123,6 +124,7 @@
+         except Exception as e:  # noqa: BLE001 — preprocessing resilience
+             self.logger.error(f"Error in elevation calculation: {str(e)}", exc_info=True)
+             import traceback
++
+             self.logger.error(traceback.format_exc())
+ 
+         return elevations
+--- upstream/src/symfluence/data/preprocessing/resampling/file_processor.py
++++ src/floodcast/data/preprocessing/resampling/file_processor.py
+@@ -6,20 +6,20 @@
+ 
+ Handles parallel and serial processing of forcing files.
+ """
++
+ from __future__ import annotations
+ 
+ import gc
+ import logging
+ import multiprocessing as mp
+ import re
++from collections.abc import Callable
+ from datetime import datetime
+ from pathlib import Path
+-from typing import Callable, List, Optional
+ 
+ from tqdm import tqdm
+ 
+-from symfluence.core.mixins import ConfigMixin
+-
++from ._config import ConfigMixin
+ from .file_validator import FileValidator
+ 
+ 
+@@ -30,7 +30,8 @@
+     This function is called once per worker process when the pool is created.
+     It configures HDF5/netCDF4 thread safety to prevent segmentation faults.
+     """
+-    from symfluence.core.hdf5_safety import apply_worker_environment
++    from ._hdf5_safety import apply_worker_environment
++
+     apply_worker_environment()
+ 
+ 
+@@ -41,12 +42,7 @@
+     Handles file filtering, output naming, and batch processing.
+     """
+ 
+-    def __init__(
+-        self,
+-        config: dict,
+-        output_dir: Path,
+-        logger: logging.Logger = None
+-    ):
++    def __init__(self, config: dict, output_dir: Path, logger: logging.Logger = None):
+         """
+         Initialize file processor.
+ 
+@@ -55,7 +51,8 @@
+             output_dir: Output directory for processed files
+             logger: Optional logger instance
+         """
+-        from symfluence.core.config.coercion import coerce_config
++        from ._compat import coerce_config
++
+         self._config = coerce_config(config, warn=False)
+         self.output_dir = output_dir
+         self.logger = logger or logging.getLogger(__name__)
+@@ -71,8 +68,12 @@
+         Returns:
+             Path: Expected output file path
+         """
+-        domain_name = self._get_config_value(lambda: self.config.domain.name, dict_key='DOMAIN_NAME')
+-        forcing_dataset = self._get_config_value(lambda: self.config.forcing.dataset, dict_key='FORCING_DATASET')
++        domain_name = self._get_config_value(
++            lambda: self.config.domain.name, dict_key="DOMAIN_NAME"
++        )
++        forcing_dataset = self._get_config_value(
++            lambda: self.config.forcing.dataset, dict_key="FORCING_DATASET"
++        )
+         input_stem = input_file.stem
+ 
+         # Try to extract a date from the filename
+@@ -115,7 +116,7 @@
+ 
+         return self.output_dir / output_filename
+ 
+-    def filter_processed_files(self, forcing_files: List[Path]) -> List[Path]:
++    def filter_processed_files(self, forcing_files: list[Path]) -> list[Path]:
+         """
+         Filter out already processed and valid files.
+ 
+@@ -131,9 +132,13 @@
+ 
+         # Explicit force: FORCE_RUN_ALL_STEPS (set directly, or by the
+         # `--force-rerun` workflow flag) reprocesses every file unconditionally.
+-        force = bool(self._get_config_value(
+-            lambda: self.config.system.force_run_all_steps,
+-            default=False, dict_key='FORCE_RUN_ALL_STEPS'))
++        force = bool(
++            self._get_config_value(
++                lambda: self.config.system.force_run_all_steps,
++                default=False,
++                dict_key="FORCE_RUN_ALL_STEPS",
++            )
++        )
+ 
+         for file in forcing_files:
+             output_file = self.determine_output_filename(file)
+@@ -146,16 +151,14 @@
+                 # radiation), the old remap must be regenerated. Reusing it
+                 # silently produces a forcing file missing variables the model
+                 # requires. See _output_is_current().
+-                is_current = (not force and is_valid
+-                              and self._output_is_current(file, output_file))
++                is_current = not force and is_valid and self._output_is_current(file, output_file)
+ 
+                 if is_current:
+                     self.logger.debug(f"Skipping already processed file: {file.name}")
+                     already_processed += 1
+                     continue
+                 else:
+-                    reason = ("forced" if force
+-                              else "corrupted" if not is_valid else "stale")
++                    reason = "forced" if force else "corrupted" if not is_valid else "stale"
+                     msg = f"Reprocessing {reason} output file {output_file.name}."
+                     if reason == "forced":
+                         self.logger.debug(msg)
+@@ -165,8 +168,7 @@
+                         output_file.unlink()
+                         corrupted_files += 1
+                     except OSError as e:
+-                        self.logger.warning(
+-                            f"Error deleting {reason} file: {e}", exc_info=True)
++                        self.logger.warning(f"Error deleting {reason} file: {e}", exc_info=True)
+ 
+             remaining_files.append(file)
+ 
+@@ -180,14 +182,28 @@
+     # Forcing variable names (CFIF + legacy SUMMA-style) that constitute the
+     # remap payload. Used to detect a cached output that is stale relative to a
+     # source whose variable set has since grown.
+-    _FORCING_VAR_NAMES = frozenset({
+-        'air_temperature', 'precipitation_flux', 'surface_air_pressure',
+-        'specific_humidity', 'wind_speed', 'relative_humidity',
+-        'surface_downwelling_shortwave_flux', 'surface_downwelling_longwave_flux',
+-        'eastward_wind', 'northward_wind',
+-        'airtemp', 'pptrate', 'airpres', 'spechum', 'windspd', 'relhum',
+-        'SWRadAtm', 'LWRadAtm',
+-    })
++    _FORCING_VAR_NAMES = frozenset(
++        {
++            "air_temperature",
++            "precipitation_flux",
++            "surface_air_pressure",
++            "specific_humidity",
++            "wind_speed",
++            "relative_humidity",
++            "surface_downwelling_shortwave_flux",
++            "surface_downwelling_longwave_flux",
++            "eastward_wind",
++            "northward_wind",
++            "airtemp",
++            "pptrate",
++            "airpres",
++            "spechum",
++            "windspd",
++            "relhum",
++            "SWRadAtm",
++            "LWRadAtm",
++        }
++    )
+ 
+     def _output_is_current(self, source_file: Path, output_file: Path) -> bool:
+         """Return False if the remapped output is stale w.r.t. its source.
+@@ -199,31 +215,32 @@
+         the model receives a forcing file missing required variables.
+         """
+         import xarray as xr
++
+         try:
+-            with xr.open_dataset(source_file) as src, \
+-                    xr.open_dataset(output_file) as out:
++            with xr.open_dataset(source_file) as src, xr.open_dataset(output_file) as out:
+                 src_forcing = self._FORCING_VAR_NAMES & set(src.data_vars)
+                 out_forcing = self._FORCING_VAR_NAMES & set(out.data_vars)
+         except (OSError, ValueError, KeyError) as e:
+             # If we cannot compare, err on the side of reprocessing.
+             self.logger.warning(
+                 "Could not compare %s against its source (%s); will reprocess.",
+-                output_file.name, e, exc_info=True)
++                output_file.name,
++                e,
++                exc_info=True,
++            )
+             return False
+         missing = src_forcing - out_forcing
+         if missing:
+             self.logger.info(
+                 "Remapped output %s is stale: source has forcing variables %s "
+                 "absent from the cached output; reprocessing.",
+-                output_file.name, sorted(missing))
++                output_file.name,
++                sorted(missing),
++            )
+             return False
+         return True
+ 
+-    def process_serial(
+-        self,
+-        files: List[Path],
+-        process_func: Callable[[Path], bool]
+-    ) -> int:
++    def process_serial(self, files: list[Path], process_func: Callable[[Path], bool]) -> int:
+         """
+         Process files in serial mode.
+ 
+@@ -256,10 +273,7 @@
+         return success_count
+ 
+     def process_parallel(
+-        self,
+-        files: List[Path],
+-        num_cpus: int,
+-        process_func: Callable[[Path, int], bool]
++        self, files: list[Path], num_cpus: int, process_func: Callable[[Path, int], bool]
+     ) -> int:
+         """
+         Process files in parallel mode.
+@@ -291,10 +305,7 @@
+                 try:
+                     # Use initializer to configure HDF5 safety in each worker
+                     with mp.Pool(processes=num_cpus, initializer=_init_worker_pool) as pool:
+-                        worker_args = [
+-                            (file, i % num_cpus)
+-                            for i, file in enumerate(batch_files)
+-                        ]
++                        worker_args = [(file, i % num_cpus) for i, file in enumerate(batch_files)]
+                         results = pool.starmap(process_func, worker_args)
+ 
+                     batch_success = sum(1 for r in results if r)
+@@ -302,7 +313,9 @@
+                     pbar.update(len(batch_files))
+ 
+                 except Exception as e:  # noqa: BLE001 — preprocessing resilience
+-                    self.logger.error(f"Error processing batch {batch_num+1}: {str(e)}", exc_info=True)
++                    self.logger.error(
++                        f"Error processing batch {batch_num + 1}: {str(e)}", exc_info=True
++                    )
+                     pbar.update(len(batch_files))
+ 
+                 gc.collect()
+@@ -311,10 +324,8 @@
+         return success_count
+ 
+     def get_forcing_files(
+-        self,
+-        forcing_path: Path,
+-        exclude_patterns: Optional[List[str]] = None
+-    ) -> List[Path]:
++        self, forcing_path: Path, exclude_patterns: list[str] | None = None
++    ) -> list[Path]:
+         """
+         Get list of forcing files, excluding non-temporal files.
+ 
+@@ -330,24 +341,28 @@
+             Sorted list of forcing file paths
+         """
+         if exclude_patterns is None:
+-            exclude_patterns = ['attributes', 'metadata', 'static', 'constants', 'params']
+-
+-        all_nc_files = list(forcing_path.glob('*.nc'))
+-        forcing_files = sorted([
+-            f for f in all_nc_files
+-            if not any(pattern in f.name.lower() for pattern in exclude_patterns)
+-        ])
++            exclude_patterns = ["attributes", "metadata", "static", "constants", "params"]
++
++        all_nc_files = list(forcing_path.glob("*.nc"))
++        forcing_files = sorted(
++            [
++                f
++                for f in all_nc_files
++                if not any(pattern in f.name.lower() for pattern in exclude_patterns)
++            ]
++        )
+ 
+         # Filter by configured dataset to avoid processing stale files from
+         # a previously configured dataset (e.g., AORC files when ERA5 is active)
+         forcing_dataset = self._get_config_value(
+-            lambda: self.config.forcing.dataset, dict_key='FORCING_DATASET'
++            lambda: self.config.forcing.dataset, dict_key="FORCING_DATASET"
+         )
+         if forcing_dataset:
+             dataset_lower = forcing_dataset.lower()
+             dataset_upper = forcing_dataset.upper()
+             dataset_files = [
+-                f for f in forcing_files
++                f
++                for f in forcing_files
+                 if dataset_lower in f.name.lower() or dataset_upper in f.name
+             ]
+             if dataset_files:
+--- upstream/src/symfluence/data/preprocessing/resampling/file_validator.py
++++ src/floodcast/data/preprocessing/resampling/file_validator.py
+@@ -6,6 +6,7 @@
+ 
+ Validates forcing files for proper structure and content.
+ """
++
+ from __future__ import annotations
+ 
+ import logging
+@@ -24,16 +25,31 @@
+     # Expected forcing variables (CFIF names + legacy SUMMA names for backward compat)
+     EXPECTED_VARS = [
+         # CFIF standard names
+-        'surface_air_pressure', 'surface_downwelling_longwave_flux',
+-        'surface_downwelling_shortwave_flux', 'precipitation_flux',
+-        'air_temperature', 'specific_humidity', 'wind_speed',
++        "surface_air_pressure",
++        "surface_downwelling_longwave_flux",
++        "surface_downwelling_shortwave_flux",
++        "precipitation_flux",
++        "air_temperature",
++        "specific_humidity",
++        "wind_speed",
+         # Legacy SUMMA-style names (for pre-existing data files)
+-        'airpres', 'LWRadAtm', 'SWRadAtm', 'pptrate',
+-        'airtemp', 'spechum', 'windspd',
++        "dew_point_temperature",
++        "air_pressure_at_mean_sea_level",
++        "eastward_wind",
++        "northward_wind",
++        "surface_downwelling_shortwave_flux_in_air",
++        "surface_downwelling_longwave_flux_in_air",
++        "airpres",
++        "LWRadAtm",
++        "SWRadAtm",
++        "pptrate",
++        "airtemp",
++        "spechum",
++        "windspd",
+     ]
+ 
+-    # Minimum file size for valid data (100KB)
+-    MIN_FILE_SIZE = 100000
++    # Small forecast subsets are valid; dimensions and values decide validity.
++    MIN_FILE_SIZE = 1
+ 
+     def __init__(self, logger: logging.Logger = None):
+         """
+@@ -58,14 +74,12 @@
+         try:
+             with xr.open_dataset(file_path, engine="h5netcdf") as ds:
+                 # Check 1: Must have time dimension
+-                if 'time' not in ds.dims:
+-                    self.logger.warning(
+-                        f"{worker_str}File {file_path.name} missing time dimension"
+-                    )
++                if "time" not in ds.dims:
++                    self.logger.warning(f"{worker_str}File {file_path.name} missing time dimension")
+                     return False
+ 
+                 # Check 2: Time dimension should have at least 1 timestep
+-                time_size = ds.sizes.get('time', 0)
++                time_size = ds.sizes.get("time", 0)
+                 if time_size < 1:
+                     self.logger.warning(
+                         f"{worker_str}File {file_path.name} has empty time dimension"
+@@ -82,7 +96,16 @@
+                     )
+                     return False
+ 
+-                # Check 4: File should be larger than just metadata
++                # Forecast adaptation: inspect actual remapped data, including
++                # small basins, instead of imposing the historical 100 KB rule.
++                import numpy as np
++
++                present = [v for v in self.EXPECTED_VARS if v in ds.data_vars]
++                if any(ds[v].size == 0 or not np.isfinite(ds[v].values).all() for v in present):
++                    self.logger.error("Remapped forcing contains missing/nonfinite values")
++                    return False
++
++                # Check 4: File should contain actual bytes
+                 file_size = file_path.stat().st_size
+                 if file_size < self.MIN_FILE_SIZE:
+                     self.logger.warning(
+@@ -96,6 +119,6 @@
+ 
+         except Exception as e:  # noqa: BLE001 — preprocessing resilience
+             self.logger.warning(
+-                f"{worker_str}Error validating file {file_path.name}: {str(e)}"
+-            , exc_info=True)
++                f"{worker_str}Error validating file {file_path.name}: {str(e)}", exc_info=True
++            )
+             return False
+--- upstream/src/symfluence/data/preprocessing/resampling/geometry_validator.py
++++ src/floodcast/data/preprocessing/resampling/geometry_validator.py
+@@ -6,6 +6,7 @@
+ 
+ Validates and repairs geometries in GeoDataFrames.
+ """
++
+ from __future__ import annotations
+ 
+ import logging
+@@ -68,12 +69,10 @@
+             return geom
+ 
+         gdf = gdf.copy()
+-        gdf['geometry'] = gdf['geometry'].apply(repair_geometry)
++        gdf["geometry"] = gdf["geometry"].apply(repair_geometry)
+ 
+         if invalid_count > 0:
+-            self.logger.info(
+-                f"Found {invalid_count} invalid geometries, repaired {repaired_count}"
+-            )
++            self.logger.info(f"Found {invalid_count} invalid geometries, repaired {repaired_count}")
+         else:
+             self.logger.debug("All geometries are valid")
+ 
+--- upstream/src/symfluence/data/preprocessing/resampling/point_scale_extractor.py
++++ src/floodcast/data/preprocessing/resampling/point_scale_extractor.py
+@@ -6,11 +6,11 @@
+ 
+ Simplified forcing extraction for point-scale or small grid domains.
+ """
++
+ from __future__ import annotations
+ 
+ import logging
+ from pathlib import Path
+-from typing import List, Optional
+ 
+ import geopandas as gpd
+ import numpy as np
+@@ -18,7 +18,7 @@
+ import rasterio
+ import xarray as xr
+ 
+-from symfluence.core.mixins import ConfigMixin
++from ._config import ConfigMixin
+ 
+ 
+ class PointScaleForcingExtractor(ConfigMixin):
+@@ -30,11 +30,7 @@
+     """
+ 
+     def __init__(
+-        self,
+-        config: dict,
+-        project_dir: Path,
+-        dataset_handler,
+-        logger: logging.Logger = None
++        self, config: dict, project_dir: Path, dataset_handler, logger: logging.Logger = None
+     ):
+         """
+         Initialize point scale extractor.
+@@ -45,7 +41,8 @@
+             dataset_handler: Dataset-specific handler for coordinate names
+             logger: Optional logger instance
+         """
+-        from symfluence.core.config.coercion import coerce_config
++        from ._compat import coerce_config
++
+         self._config = coerce_config(config, warn=False)
+         self.project_dir = project_dir
+         self.dataset_handler = dataset_handler
+@@ -63,10 +60,11 @@
+         """
+         try:
+             # Find a sample forcing file
+-            exclude_patterns = ['attributes', 'metadata', 'static', 'constants', 'params']
+-            all_nc_files = list(merged_forcing_path.glob('*.nc'))
++            exclude_patterns = ["attributes", "metadata", "static", "constants", "params"]
++            all_nc_files = list(merged_forcing_path.glob("*.nc"))
+             forcing_files = [
+-                f for f in all_nc_files
++                f
++                for f in all_nc_files
+                 if not any(pattern in f.name.lower() for pattern in exclude_patterns)
+             ]
+ 
+@@ -90,7 +88,7 @@
+                     lat_size = lon_size = 1
+ 
+                 # EASYMORE requires at least 3 values in each dimension
+-                is_tiny = (lat_size <= 2 or lon_size <= 2)
++                is_tiny = lat_size <= 2 or lon_size <= 2
+ 
+                 if is_tiny:
+                     self.logger.info(
+@@ -107,11 +105,11 @@
+ 
+     def process(
+         self,
+-        forcing_files: List[Path],
++        forcing_files: list[Path],
+         output_dir: Path,
+         catchment_file_path: Path,
+         output_filename_func,
+-        dem_path: Optional[Path] = None
++        dem_path: Path | None = None,
+     ) -> None:
+         """
+         Process forcing files using simplified point-scale extraction.
+@@ -124,20 +122,30 @@
+             dem_path: Optional path to DEM raster for forcing grid elevation lookup
+         """
+         output_dir.mkdir(parents=True, exist_ok=True)
+-        intersect_path = self.project_dir / 'shapefiles' / 'catchment_intersection' / 'with_forcing'
++        intersect_path = self.project_dir / "shapefiles" / "catchment_intersection" / "with_forcing"
+         intersect_path.mkdir(parents=True, exist_ok=True)
+ 
+         # Create minimal intersection CSV
+-        case_name = f"{self._get_config_value(lambda: self.config.domain.name, dict_key='DOMAIN_NAME')}_{self._get_config_value(lambda: self.config.forcing.dataset, dict_key='FORCING_DATASET')}"
++        domain = self._get_config_value(lambda: self.config.domain.name, dict_key="DOMAIN_NAME")
++        dataset = self._get_config_value(
++            lambda: self.config.forcing.dataset, dict_key="FORCING_DATASET"
++        )
++        case_name = f"{domain}_{dataset}"
+         intersect_csv = intersect_path / f"{case_name}_intersected_shapefile.csv"
+ 
+         if not intersect_csv.exists():
+-            self._create_intersection_csv(intersect_csv, catchment_file_path, forcing_files, dem_path)
++            self._create_intersection_csv(
++                intersect_csv, catchment_file_path, forcing_files, dem_path
++            )
+ 
+         # Process each file
+         for file in forcing_files:
+             output_file = output_filename_func(file)
+-            if output_file.exists() and not self._get_config_value(lambda: self.config.system.force_run_all_steps, default=False, dict_key='FORCE_RUN_ALL_STEPS'):
++            if output_file.exists() and not self._get_config_value(
++                lambda: self.config.system.force_run_all_steps,
++                default=False,
++                dict_key="FORCE_RUN_ALL_STEPS",
++            ):
+                 continue
+ 
+             self._process_single_file(file, output_file, intersect_csv)
+@@ -146,8 +154,8 @@
+         self,
+         intersect_csv: Path,
+         catchment_file_path: Path,
+-        forcing_files: Optional[List[Path]] = None,
+-        dem_path: Optional[Path] = None
++        forcing_files: list[Path] | None = None,
++        dem_path: Path | None = None,
+     ) -> None:
+         """Create minimal intersection artifact for SUMMA preprocessor.
+ 
+@@ -159,10 +167,14 @@
+         self.logger.info(f"Creating minimal intersection artifact: {intersect_csv.name}")
+ 
+         target_gdf = gpd.read_file(catchment_file_path)
+-        hru_id_field = self._get_config_value(lambda: self.config.paths.catchment_hruid, dict_key='CATCHMENT_SHP_HRUID')
++        hru_id_field = self._get_config_value(
++            lambda: self.config.paths.catchment_hruid, dict_key="CATCHMENT_SHP_HRUID"
++        )
+ 
+         hru_id_field_val = target_gdf[hru_id_field].values
+-        catchment_elevs = target_gdf['elev_mean'].values if 'elev_mean' in target_gdf.columns else None
++        catchment_elevs = (
++            target_gdf["elev_mean"].values if "elev_mean" in target_gdf.columns else None
++        )
+ 
+         # Determine forcing grid elevation from DEM
+         forcing_elev = self._get_forcing_elevation_from_dem(forcing_files, dem_path)
+@@ -184,22 +196,26 @@
+                 "Neither DEM nor catchment elevation available; setting S_2_elev_m = 0"
+             )
+ 
+-        df_int = pd.DataFrame({
+-            hru_id_field: hru_id_field_val,
+-            'S_1_HRU_ID': hru_id_field_val,
+-            'S_1_GRU_ID': target_gdf['GRU_ID'].values if 'GRU_ID' in target_gdf.columns else [1],
+-            'ID': [1] * len(target_gdf),
+-            'weight': [1.0] * len(target_gdf),
+-            'S_1_elev_m': catchment_elevs if catchment_elevs is not None else [0.0] * len(target_gdf),
+-            'S_2_elev_m': forcing_elev_arr
+-        })
++        df_int = pd.DataFrame(
++            {
++                hru_id_field: hru_id_field_val,
++                "S_1_HRU_ID": hru_id_field_val,
++                "S_1_GRU_ID": target_gdf["GRU_ID"].values
++                if "GRU_ID" in target_gdf.columns
++                else [1],
++                "ID": [1] * len(target_gdf),
++                "weight": [1.0] * len(target_gdf),
++                "S_1_elev_m": catchment_elevs
++                if catchment_elevs is not None
++                else [0.0] * len(target_gdf),
++                "S_2_elev_m": forcing_elev_arr,
++            }
++        )
+         df_int.to_csv(intersect_csv, index=False)
+ 
+     def _get_forcing_elevation_from_dem(
+-        self,
+-        forcing_files: Optional[List[Path]],
+-        dem_path: Optional[Path]
+-    ) -> Optional[float]:
++        self, forcing_files: list[Path] | None, dem_path: Path | None
++    ) -> float | None:
+         """Sample the DEM at the forcing grid cell centre to get forcing elevation.
+ 
+         Returns the mean DEM elevation under the forcing grid cell, or None if
+@@ -242,21 +258,16 @@
+             self.logger.warning(f"Could not extract forcing elevation from DEM: {e}", exc_info=True)
+             return None
+ 
+-    def _process_single_file(
+-        self,
+-        file: Path,
+-        output_file: Path,
+-        intersect_csv: Path
+-    ) -> None:
++    def _process_single_file(self, file: Path, output_file: Path, intersect_csv: Path) -> None:
+         """Process a single forcing file."""
+         self.logger.info(f"Extracting point forcing: {file.name}")
+ 
+         with xr.open_dataset(file, engine="h5netcdf") as ds:
+             # Pick the first cell if it's a grid
+-            spatial_dims = {d: 0 for d in ds.dims if d not in ['time', 'hru']}
++            spatial_dims = {d: 0 for d in ds.dims if d not in ["time", "hru"]}
+ 
+             # Check for empty spatial dimensions
+-            for dim_name, idx in spatial_dims.items():
++            for dim_name, _idx in spatial_dims.items():
+                 if dim_name in ds.dims and ds.sizes[dim_name] == 0:
+                     raise ValueError(
+                         f"Cannot extract point forcing from {file.name}: "
+@@ -270,26 +281,31 @@
+             if intersect_csv.exists():
+                 try:
+                     df_int = pd.read_csv(intersect_csv)
+-                    hru_ids = df_int[self._get_config_value(lambda: self.config.paths.catchment_hruid, dict_key='CATCHMENT_SHP_HRUID')].values.astype('int32')
++                    hru_ids = df_int[
++                        self._get_config_value(
++                            lambda: self.config.paths.catchment_hruid,
++                            dict_key="CATCHMENT_SHP_HRUID",
++                        )
++                    ].values.astype("int32")
+                 except (pd.errors.ParserError, KeyError, ValueError) as e:
+                     self.logger.debug(f"Could not read HRU IDs from intersection CSV: {e}")
+ 
+             n_hrus = len(hru_ids)
+ 
+             # Add HRU dimension if missing
+-            if 'hru' not in ds_point.dims:
++            if "hru" not in ds_point.dims:
+                 ds_point = ds_point.expand_dims(hru=range(n_hrus))
+ 
+-            if 'hruId' not in ds_point.data_vars:
+-                ds_point['hruId'] = (('hru',), hru_ids)
++            if "hruId" not in ds_point.data_vars:
++                ds_point["hruId"] = (("hru",), hru_ids)
+ 
+             # Ensure correct dimension order (time, hru)
+             for var in ds_point.data_vars:
+-                if 'time' in ds_point[var].dims and 'hru' in ds_point[var].dims:
+-                    ds_point[var] = ds_point[var].transpose('time', 'hru')
++                if "time" in ds_point[var].dims and "hru" in ds_point[var].dims:
++                    ds_point[var] = ds_point[var].transpose("time", "hru")
+ 
+             # Drop irrelevant coordinates
+-            coords_to_drop = ['latitude', 'longitude', 'lat', 'lon', 'expver']
++            coords_to_drop = ["latitude", "longitude", "lat", "lon", "expver"]
+             ds_point = ds_point.drop_vars(
+                 [c for c in coords_to_drop if c in ds_point.coords or c in ds_point.data_vars]
+             )
+@@ -297,10 +313,10 @@
+             # Clear encoding
+             for var in ds_point.variables:
+                 ds_point[var].encoding = {}
+-                if 'missing_value' in ds_point[var].attrs:
+-                    del ds_point[var].attrs['missing_value']
+-                if '_FillValue' in ds_point[var].attrs:
+-                    del ds_point[var].attrs['_FillValue']
++                if "missing_value" in ds_point[var].attrs:
++                    del ds_point[var].attrs["missing_value"]
++                if "_FillValue" in ds_point[var].attrs:
++                    del ds_point[var].attrs["_FillValue"]
+ 
+             ds_point.to_netcdf(output_file, engine="h5netcdf")
+             self.logger.info(f"Created point forcing: {output_file.name}")
+--- upstream/src/symfluence/data/preprocessing/resampling/shapefile_processor.py
++++ src/floodcast/data/preprocessing/resampling/shapefile_processor.py
+@@ -6,16 +6,15 @@
+ 
+ Handles shapefile CRS conversion and HRU ID uniqueness.
+ """
++
+ from __future__ import annotations
+ 
+ import logging
+ from pathlib import Path
+-from typing import Tuple, Union
+ 
+ import geopandas as gpd
+ 
+-from symfluence.core.mixins import ConfigMixin
+-
++from ._config import ConfigMixin
+ from .geometry_validator import GeometryValidator
+ 
+ 
+@@ -34,16 +33,13 @@
+             config: Configuration dictionary
+             logger: Optional logger instance
+         """
+-        from symfluence.core.config.coercion import coerce_config
++        from ._compat import coerce_config
++
+         self._config = coerce_config(config, warn=False)
+         self.logger = logger or logging.getLogger(__name__)
+         self.geometry_validator = GeometryValidator(self.logger)
+ 
+-    def ensure_unique_hru_ids(
+-        self,
+-        shapefile_path: Path,
+-        hru_id_field: str
+-    ) -> Tuple[Path, str]:
++    def ensure_unique_hru_ids(self, shapefile_path: Path, hru_id_field: str) -> tuple[Path, str]:
+         """
+         Ensure HRU IDs are unique in the shapefile.
+ 
+@@ -75,7 +71,9 @@
+                                 )
+                                 return existing_path, hru_id_field
+                     except Exception as e:  # noqa: BLE001 — preprocessing resilience
+-                        self.logger.debug(f"Could not use existing {existing_path.name}: {e}", exc_info=True)
++                        self.logger.debug(
++                            f"Could not use existing {existing_path.name}: {e}", exc_info=True
++                        )
+ 
+             # Read the shapefile
+             gdf = gpd.read_file(shapefile_path)
+@@ -98,7 +96,9 @@
+                 return shapefile_path, hru_id_field
+ 
+             # Handle duplicates
+-            self.logger.info(f"Found {original_count - unique_count} duplicate {hru_id_field} values")
++            self.logger.info(
++                f"Found {original_count - unique_count} duplicate {hru_id_field} values"
++            )
+ 
+             if unique_count <= 10:
+                 # Lumped/semi-distributed: dissolve features
+@@ -110,15 +110,11 @@
+         except Exception as e:  # noqa: BLE001 — wrap-and-raise to domain error
+             self.logger.error(f"Error ensuring unique HRU IDs: {str(e)}")
+             import traceback
++
+             self.logger.error(traceback.format_exc())
+             raise
+ 
+-    def _dissolve_features(
+-        self,
+-        gdf,
+-        hru_id_field: str,
+-        shapefile_path: Path
+-    ) -> Tuple[Path, str]:
++    def _dissolve_features(self, gdf, hru_id_field: str, shapefile_path: Path) -> tuple[Path, str]:
+         """Dissolve features by HRU_ID for lumped catchments."""
+         unique_count = gdf[hru_id_field].nunique()
+         original_count = len(gdf)
+@@ -129,17 +125,22 @@
+         # Build aggregation dictionary
+         agg_dict = {}
+         for col in gdf.columns:
+-            if col == 'geometry' or col == hru_id_field:
++            if col == "geometry" or col == hru_id_field:
+                 continue
+-            elif col in ['GRU_ID', 'gru_to_seg']:
+-                agg_dict[col] = 'first'
+-            elif gdf[col].dtype in ['float64', 'float32', 'int64', 'int32']:
+-                if col.lower().endswith('_area') or col in ['HRU_area', 'GRU_area', 'HRUarea', 'GRUarea']:
+-                    agg_dict[col] = 'sum'
++            elif col in ["GRU_ID", "gru_to_seg"]:
++                agg_dict[col] = "first"
++            elif gdf[col].dtype in ["float64", "float32", "int64", "int32"]:
++                if col.lower().endswith("_area") or col in [
++                    "HRU_area",
++                    "GRU_area",
++                    "HRUarea",
++                    "GRUarea",
++                ]:
++                    agg_dict[col] = "sum"
+                 else:
+-                    agg_dict[col] = 'mean'
++                    agg_dict[col] = "mean"
+             else:
+-                agg_dict[col] = 'first'
++                agg_dict[col] = "first"
+ 
+         gdf_dissolved = gdf.dissolve(by=hru_id_field, aggfunc=agg_dict)
+         gdf_dissolved = gdf_dissolved.reset_index()
+@@ -161,12 +162,7 @@
+         else:
+             raise ValueError("Could not dissolve features by HRU_ID")
+ 
+-    def _create_unique_ids(
+-        self,
+-        gdf,
+-        hru_id_field: str,
+-        shapefile_path: Path
+-    ) -> Tuple[Path, str]:
++    def _create_unique_ids(self, gdf, hru_id_field: str, shapefile_path: Path) -> tuple[Path, str]:
+         """Create unique sequential IDs for distributed models."""
+         self.logger.info(
+             f"Detected distributed model ({gdf[hru_id_field].nunique()} unique HRUs, "
+@@ -192,7 +188,7 @@
+         verify_gdf = gpd.read_file(output_path)
+         self.logger.info(f"Fields in saved shapefile: {list(verify_gdf.columns)}")
+ 
+-        possible_fields = [col for col in verify_gdf.columns if col.startswith('hru_id')]
++        possible_fields = [col for col in verify_gdf.columns if col.startswith("hru_id")]
+         if not possible_fields:
+             raise ValueError("Could not find unique HRU ID field in saved shapefile")
+ 
+@@ -206,10 +202,8 @@
+             raise ValueError("Could not create unique HRU IDs")
+ 
+     def ensure_wgs84(
+-        self,
+-        shapefile_path: Path,
+-        output_suffix: str = "_wgs84"
+-    ) -> Union[Path, Tuple[Path, str]]:
++        self, shapefile_path: Path, output_suffix: str = "_wgs84"
++    ) -> Path | tuple[Path, str]:
+         """
+         Ensure shapefile is in WGS84 (EPSG:4326).
+ 
+@@ -222,7 +216,7 @@
+             For source shapefiles: wgs84_path
+         """
+         shapefile_path = Path(shapefile_path)
+-        is_target_shapefile = 'catchment' in str(shapefile_path).lower()
++        is_target_shapefile = "catchment" in str(shapefile_path).lower()
+ 
+         try:
+             gdf = gpd.read_file(shapefile_path)
+@@ -232,7 +226,9 @@
+ 
+             # For target shapefiles, ensure unique HRU IDs first
+             if is_target_shapefile:
+-                hru_id_field = self._get_config_value(lambda: self.config.paths.catchment_hruid, dict_key='CATCHMENT_SHP_HRUID')
++                hru_id_field = self._get_config_value(
++                    lambda: self.config.paths.catchment_hruid, dict_key="CATCHMENT_SHP_HRUID"
++                )
+                 shapefile_path, actual_hru_field = self.ensure_unique_hru_ids(
+                     shapefile_path, hru_id_field
+                 )
+@@ -257,28 +253,34 @@
+                     if wgs84_gdf.crs is not None and wgs84_gdf.crs.to_epsg() == 4326:
+                         if is_target_shapefile:
+                             possible_fields = [
+-                                col for col in wgs84_gdf.columns if col.startswith('hru_id')
++                                col for col in wgs84_gdf.columns if col.startswith("hru_id")
+                             ]
+-                            if possible_fields and wgs84_gdf[possible_fields[0]].nunique() == len(wgs84_gdf):
++                            if possible_fields and wgs84_gdf[possible_fields[0]].nunique() == len(
++                                wgs84_gdf
++                            ):
+                                 self.logger.info(
+                                     f"WGS84 version with unique IDs exists: {wgs84_shapefile.name}"
+                                 )
+                                 return wgs84_shapefile, possible_fields[0]
+                         else:
+-                            self.logger.info(f"WGS84 version already exists: {wgs84_shapefile.name}")
++                            self.logger.info(
++                                f"WGS84 version already exists: {wgs84_shapefile.name}"
++                            )
+                             return wgs84_shapefile
+                 except Exception as e:  # noqa: BLE001 — preprocessing resilience
+-                    self.logger.warning(f"Error reading existing WGS84 file: {e}. Recreating.", exc_info=True)
++                    self.logger.warning(
++                        f"Error reading existing WGS84 file: {e}. Recreating.", exc_info=True
++                    )
+ 
+             # Convert to WGS84
+             self.logger.info(f"Converting {shapefile_path.name} from {current_crs} to WGS84")
+-            gdf_wgs84 = gdf.to_crs('EPSG:4326')
++            gdf_wgs84 = gdf.to_crs("EPSG:4326")
+             gdf_wgs84.to_file(wgs84_shapefile)
+             self.logger.info(f"WGS84 shapefile created: {wgs84_shapefile}")
+ 
+             if is_target_shapefile:
+                 saved_gdf = gpd.read_file(wgs84_shapefile)
+-                possible_fields = [col for col in saved_gdf.columns if col.startswith('hru_id')]
++                possible_fields = [col for col in saved_gdf.columns if col.startswith("hru_id")]
+                 if possible_fields:
+                     return wgs84_shapefile, possible_fields[0]
+                 else:
+--- upstream/src/symfluence/data/preprocessing/resampling/weight_applier.py
++++ src/floodcast/data/preprocessing/resampling/weight_applier.py
+@@ -6,6 +6,7 @@
+ 
+ Applies pre-computed EASYMORE weights to forcing files.
+ """
++
+ from __future__ import annotations
+ 
+ import gc
+@@ -14,13 +15,11 @@
+ import time
+ import uuid
+ from pathlib import Path
+-from typing import Optional
+ 
+ import xarray as xr
+ 
+-from symfluence.core.mixins import ConfigMixin
+-from symfluence.core.mixins.project import resolve_data_subdir
+-
++from ._compat import resolve_data_subdir
++from ._config import ConfigMixin
+ from .file_validator import FileValidator
+ from .weight_generator import _create_easymore_instance, _run_easmore_with_suppressed_output
+ 
+@@ -39,7 +38,7 @@
+         project_dir: Path,
+         output_dir: Path,
+         dataset_handler,
+-        logger: logging.Logger = None
++        logger: logging.Logger = None,
+     ):
+         """
+         Initialize weight applier.
+@@ -52,7 +51,8 @@
+             logger: Optional logger instance
+         """
+         # Use centralized config coercion (handles dict -> SymfluenceConfig with fallback)
+-        from symfluence.core.config.coercion import coerce_config
++        from ._compat import coerce_config
++
+         self._config = coerce_config(config, warn=False)
+         self.project_dir = project_dir
+         self.output_dir = output_dir
+@@ -61,14 +61,10 @@
+         self.file_validator = FileValidator(self.logger)
+ 
+         # Cache for shapefile paths (set by weight generator)
+-        self.cached_target_shp_wgs84: Optional[Path] = None
+-        self.cached_hru_field: Optional[str] = None
+-
+-    def set_shapefile_cache(
+-        self,
+-        target_shp_wgs84: Path,
+-        hru_field: str
+-    ) -> None:
++        self.cached_target_shp_wgs84: Path | None = None
++        self.cached_hru_field: str | None = None
++
++    def set_shapefile_cache(self, target_shp_wgs84: Path, hru_field: str) -> None:
+         """
+         Set cached shapefile paths from weight generation phase.
+ 
+@@ -81,11 +77,7 @@
+         self.logger.debug(f"Cached shapefile: {target_shp_wgs84}, HRU field: {hru_field}")
+ 
+     def apply_weights(
+-        self,
+-        file: Path,
+-        remap_file: Path,
+-        output_file: Path,
+-        worker_id: Optional[int] = None
++        self, file: Path, remap_file: Path, output_file: Path, worker_id: int | None = None
+     ) -> bool:
+         """
+         Apply pre-computed remapping weights to a forcing file.
+@@ -112,7 +104,7 @@
+ 
+             # Create unique temp directory
+             unique_id = str(uuid.uuid4())[:8]
+-            temp_dir = resolve_data_subdir(self.project_dir, 'forcing') / f'temp_apply_{unique_id}'
++            temp_dir = resolve_data_subdir(self.project_dir, "forcing") / f"temp_apply_{unique_id}"
+             temp_dir.mkdir(parents=True, exist_ok=True)
+ 
+             try:
+@@ -123,14 +115,16 @@
+ 
+                 # Apply the remapping
+                 self.logger.debug(f"{worker_str}Applying remapping weights to {file.name}")
+-                self.logger.debug(f"{worker_str}EASYMORE configured to remap variables: {esmr.var_names}")
++                self.logger.debug(
++                    f"{worker_str}EASYMORE configured to remap variables: {esmr.var_names}"
++                )
+ 
+                 success, stdout, stderr = _run_easmore_with_suppressed_output(esmr, self.logger)
+ 
+                 # Log concerning patterns
+-                if 'no data' in stdout.lower() or 'no data' in stderr.lower():
++                if "no data" in stdout.lower() or "no data" in stderr.lower():
+                     self.logger.warning(f"{worker_str}EASYMORE reported 'no data' for {file.name}")
+-                if 'empty' in stdout.lower() or 'empty' in stderr.lower():
++                if "empty" in stdout.lower() or "empty" in stderr.lower():
+                     self.logger.warning(f"{worker_str}EASYMORE reported 'empty' for {file.name}")
+ 
+                 # Find and move output file
+@@ -148,7 +142,8 @@
+                 if file_size > 1000:
+                     elapsed_time = time.time() - start_time
+                     self.logger.debug(
+-                        f"{worker_str}Successfully processed {file.name} in {elapsed_time:.2f} seconds"
++                        f"{worker_str}Successfully processed {file.name} "
++                        f"in {elapsed_time:.2f} seconds"
+                     )
+                     return True
+                 else:
+@@ -161,21 +156,20 @@
+         except Exception as e:  # noqa: BLE001 — preprocessing resilience
+             self.logger.error(f"{worker_str}Error processing {file.name}: {str(e)}", exc_info=True)
+             import traceback
++
+             self.logger.error(traceback.format_exc())
+             return False
+ 
+-    def _configure_easymore(
+-        self,
+-        file: Path,
+-        remap_file: Path,
+-        temp_dir: Path,
+-        worker_str: str
+-    ):
++    def _configure_easymore(self, file: Path, remap_file: Path, temp_dir: Path, worker_str: str):
+         """Configure EASYMORE for weight application."""
+         esmr = _create_easymore_instance()
+ 
+-        esmr.author_name = 'SUMMA public workflow scripts'
+-        esmr.case_name = f"{self._get_config_value(lambda: self.config.domain.name, dict_key='DOMAIN_NAME')}_{self._get_config_value(lambda: self.config.forcing.dataset, dict_key='FORCING_DATASET')}"
++        esmr.author_name = "SUMMA public workflow scripts"
++        domain = self._get_config_value(lambda: self.config.domain.name, dict_key="DOMAIN_NAME")
++        dataset = self._get_config_value(
++            lambda: self.config.forcing.dataset, dict_key="FORCING_DATASET"
++        )
++        esmr.case_name = f"{domain}_{dataset}"
+         esmr.correction_shp_lon = False
+ 
+         # Use cached shapefile path
+@@ -185,8 +179,12 @@
+ 
+         esmr.target_shp = str(self.cached_target_shp_wgs84)
+         esmr.target_shp_ID = self.cached_hru_field
+-        esmr.target_shp_lat = self._get_config_value(lambda: self.config.paths.catchment_lat, dict_key='CATCHMENT_SHP_LAT')
+-        esmr.target_shp_lon = self._get_config_value(lambda: self.config.paths.catchment_lon, dict_key='CATCHMENT_SHP_LON')
++        esmr.target_shp_lat = self._get_config_value(
++            lambda: self.config.paths.catchment_lat, dict_key="CATCHMENT_SHP_LAT"
++        )
++        esmr.target_shp_lon = self._get_config_value(
++            lambda: self.config.paths.catchment_lon, dict_key="CATCHMENT_SHP_LON"
++        )
+ 
+         # Coordinate variables
+         var_lat, var_lon = self.dataset_handler.get_coordinate_names()
+@@ -202,24 +200,28 @@
+         esmr.var_names = available_vars
+         esmr.var_lat = var_lat
+         esmr.var_lon = var_lon
+-        esmr.var_time = 'time'
++        esmr.var_time = "time"
+ 
+         # Directories
+-        esmr.temp_dir = str(temp_dir) + '/'
+-        esmr.output_dir = str(temp_dir) + '/'
++        esmr.temp_dir = str(temp_dir) + "/"
++        esmr.output_dir = str(temp_dir) + "/"
+ 
+         # Output configuration
+-        esmr.remapped_dim_id = 'hru'
+-        esmr.remapped_var_id = 'hruId'
+-        esmr.format_list = ['f4']
+-        esmr.fill_value_list = ['-9999']
++        esmr.remapped_dim_id = "hru"
++        esmr.remapped_var_id = "hruId"
++        esmr.format_list = ["f4"]
++        esmr.fill_value_list = ["-9999"]
+ 
+         # Point to pre-computed weights
+         esmr.remap_csv = str(remap_file)
+ 
+         # EASYMORE 2.0: Provide NetCDF version if available
+-        remap_nc = remap_file.with_suffix('.nc')
+-        case_name = f"{self._get_config_value(lambda: self.config.domain.name, dict_key='DOMAIN_NAME')}_{self._get_config_value(lambda: self.config.forcing.dataset, dict_key='FORCING_DATASET')}"
++        remap_nc = remap_file.with_suffix(".nc")
++        domain = self._get_config_value(lambda: self.config.domain.name, dict_key="DOMAIN_NAME")
++        dataset = self._get_config_value(
++            lambda: self.config.forcing.dataset, dict_key="FORCING_DATASET"
++        )
++        case_name = f"{domain}_{dataset}"
+         attr_nc = remap_file.parent / f"{case_name}_attributes.nc"
+ 
+         if remap_nc.exists():
+@@ -258,18 +260,34 @@
+             with xr.open_dataset(file, engine="h5netcdf") as ds:
+                 # CFIF standard variable names (primary)
+                 all_cfif_vars = [
+-                    'surface_air_pressure', 'surface_downwelling_longwave_flux',
+-                    'surface_downwelling_shortwave_flux', 'precipitation_flux',
+-                    'air_temperature', 'specific_humidity', 'wind_speed',
+-                    'relative_humidity', 'eastward_wind', 'northward_wind',
++                    "surface_air_pressure",
++                    "surface_downwelling_longwave_flux",
++                    "surface_downwelling_shortwave_flux",
++                    "precipitation_flux",
++                    "air_temperature",
++                    "specific_humidity",
++                    "wind_speed",
++                    "relative_humidity",
++                    "eastward_wind",
++                    "northward_wind",
++                    "dew_point_temperature",
++                    "air_pressure_at_mean_sea_level",
++                    "surface_downwelling_shortwave_flux_in_air",
++                    "surface_downwelling_longwave_flux_in_air",
+                 ]
+                 available_vars = [v for v in all_cfif_vars if v in ds]
+ 
+                 if not available_vars:
+                     # Fallback: legacy SUMMA-style variable names
+                     all_legacy_vars = [
+-                        'airpres', 'LWRadAtm', 'SWRadAtm', 'pptrate',
+-                        'airtemp', 'spechum', 'windspd', 'relhum',
++                        "airpres",
++                        "LWRadAtm",
++                        "SWRadAtm",
++                        "pptrate",
++                        "airtemp",
++                        "spechum",
++                        "windspd",
++                        "relhum",
+                     ]
+                     available_vars = [v for v in all_legacy_vars if v in ds]
+ 
+@@ -291,17 +309,20 @@
+                     )
+                     return []
+ 
+-                if 'time' not in ds.dims:
++                if "time" not in ds.dims:
+                     self.logger.error(f"{worker_str}Input file {file.name} has no time dimension!")
+                     return []
+ 
+                 self.logger.debug(
+-                    f"{worker_str}Detected {len(available_vars)} variables in {file.name}: {available_vars}"
++                    f"{worker_str}Detected {len(available_vars)} variables "
++                    f"in {file.name}: {available_vars}"
+                 )
+                 return available_vars
+ 
+         except Exception as e:  # noqa: BLE001 — preprocessing resilience
+-            self.logger.error(f"{worker_str}Error opening {file.name} for variable detection: {e}", exc_info=True)
++            self.logger.error(
++                f"{worker_str}Error opening {file.name} for variable detection: {e}", exc_info=True
++            )
+             return []
+         finally:
+             gc.collect()
+@@ -323,7 +344,7 @@
+         # Discover the rename map for this handler. Older handlers expose
+         # ``get_variable_mapping``; newer ones use ``process_dataset``.
+         rename_map = {}
+-        if hasattr(self.dataset_handler, 'get_variable_mapping'):
++        if hasattr(self.dataset_handler, "get_variable_mapping"):
+             try:
+                 full_map = self.dataset_handler.get_variable_mapping() or {}
+                 rename_map = {k: v for k, v in full_map.items() if k in ds.variables}
+@@ -344,46 +365,51 @@
+             ds_load = xr.open_dataset(file, engine="h5netcdf").load()
+             try:
+                 ds_proc = self.dataset_handler.process_dataset(ds_load)
+-                tmp = file.with_suffix(file.suffix + '.cfif_tmp')
++                tmp = file.with_suffix(file.suffix + ".cfif_tmp")
+                 ds_proc.to_netcdf(tmp)
+             finally:
+                 ds_load.close()
+             tmp.replace(file)
+         except Exception as e:  # noqa: BLE001 — defensive guard, don't kill remap
+             self.logger.error(
+-                f"{worker_str}Failed to materialise CFIF-renamed copy of "
+-                f"{file.name}: {e}"
++                f"{worker_str}Failed to materialise CFIF-renamed copy of {file.name}: {e}"
+             )
+             return []
+ 
+         # Re-detect on the rewritten file
+         with xr.open_dataset(file, engine="h5netcdf") as ds2:
+             cfif_now = [
+-                v for v in (
+-                    'surface_air_pressure', 'surface_downwelling_longwave_flux',
+-                    'surface_downwelling_shortwave_flux', 'precipitation_flux',
+-                    'air_temperature', 'specific_humidity', 'wind_speed',
+-                    'relative_humidity', 'eastward_wind', 'northward_wind',
++                v
++                for v in (
++                    "surface_air_pressure",
++                    "surface_downwelling_longwave_flux",
++                    "surface_downwelling_shortwave_flux",
++                    "precipitation_flux",
++                    "air_temperature",
++                    "specific_humidity",
++                    "wind_speed",
++                    "relative_humidity",
++                    "eastward_wind",
++                    "northward_wind",
++                    "dew_point_temperature",
++                    "air_pressure_at_mean_sea_level",
++                    "surface_downwelling_shortwave_flux_in_air",
++                    "surface_downwelling_longwave_flux_in_air",
+                 )
+                 if v in ds2
+             ]
+-        self.logger.info(
+-            f"{worker_str}{file.name} now contains CFIF variables: {cfif_now}"
+-        )
++        self.logger.info(f"{worker_str}{file.name} now contains CFIF variables: {cfif_now}")
+         return cfif_now
+ 
+     def _move_output_file(
+-        self,
+-        temp_dir: Path,
+-        output_file: Path,
+-        input_file: Path,
+-        worker_str: str
++        self, temp_dir: Path, output_file: Path, input_file: Path, worker_str: str
+     ) -> bool:
+         """Find and move output file from temp directory."""
+-        exclude_patterns = ['attributes', 'metadata', 'static', 'constants', 'params', 'remapping']
++        exclude_patterns = ["attributes", "metadata", "static", "constants", "params", "remapping"]
+         all_temp_files = list(temp_dir.glob("*.nc"))
+         temp_output_files = [
+-            f for f in all_temp_files
++            f
++            for f in all_temp_files
+             if not any(pattern in f.name.lower() for pattern in exclude_patterns)
+         ]
+ 
+@@ -399,7 +425,9 @@
+                     f"Output file: {temp_output.name}."
+                 )
+                 all_created = list(temp_dir.glob("*"))
+-                self.logger.error(f"{worker_str}Files created by EASYMORE: {[f.name for f in all_created]}")
++                self.logger.error(
++                    f"{worker_str}Files created by EASYMORE: {[f.name for f in all_created]}"
++                )
+                 return False
+ 
+             # Ensure output directory exists
+--- upstream/src/symfluence/data/preprocessing/resampling/weight_generator.py
++++ src/floodcast/data/preprocessing/resampling/weight_generator.py
+@@ -6,21 +6,20 @@
+ 
+ Creates EASYMORE remapping weights for forcing data.
+ """
++
+ from __future__ import annotations
+ 
+ import gc
+ import logging
+ import shutil
+ from pathlib import Path
+-from typing import Optional, Tuple
+ 
+ import geopandas as gpd
+ import xarray as xr
+ 
+-from symfluence.core.hdf5_safety import clear_xarray_cache, prepare_for_netcdf_operation
+-from symfluence.core.mixins import ConfigMixin
+-from symfluence.core.mixins.project import resolve_data_subdir
+-
++from ._compat import resolve_data_subdir
++from ._config import ConfigMixin
++from ._hdf5_safety import clear_xarray_cache, prepare_for_netcdf_operation
+ from .shapefile_processor import ShapefileProcessor
+ 
+ 
+@@ -53,9 +52,9 @@
+ 
+     try:
+         with warnings.catch_warnings():
+-            warnings.filterwarnings('ignore', category=DeprecationWarning)
+-            warnings.filterwarnings('ignore', category=RuntimeWarning)
+-            warnings.filterwarnings('ignore', category=UserWarning)
++            warnings.filterwarnings("ignore", category=DeprecationWarning)
++            warnings.filterwarnings("ignore", category=RuntimeWarning)
++            warnings.filterwarnings("ignore", category=UserWarning)
+ 
+             captured_output = StringIO()
+             captured_error = StringIO()
+@@ -68,7 +67,7 @@
+ 
+             has_error = any(
+                 indicator in stderr_text.lower()
+-                for indicator in ['error', 'failed', 'exception', 'traceback']
++                for indicator in ["error", "failed", "exception", "traceback"]
+             )
+ 
+             if stdout_text:
+@@ -99,11 +98,7 @@
+     """
+ 
+     def __init__(
+-        self,
+-        config: dict,
+-        project_dir: Path,
+-        dataset_handler,
+-        logger: logging.Logger = None
++        self, config: dict, project_dir: Path, dataset_handler, logger: logging.Logger = None
+     ):
+         """
+         Initialize weight generator.
+@@ -115,7 +110,8 @@
+             logger: Optional logger instance
+         """
+         # Use centralized config coercion (handles dict -> SymfluenceConfig with fallback)
+-        from symfluence.core.config.coercion import coerce_config
++        from ._compat import coerce_config
++
+         self._config = coerce_config(config, warn=False)
+         self.project_dir = project_dir
+         self.dataset_handler = dataset_handler
+@@ -123,13 +119,11 @@
+         self.shapefile_processor = ShapefileProcessor(config, self.logger)
+ 
+         # Cache for processed shapefiles
+-        self.cached_target_shp_wgs84: Optional[Path] = None
+-        self.cached_hru_field: Optional[str] = None
++        self.cached_target_shp_wgs84: Path | None = None
++        self.cached_hru_field: str | None = None
+         self.detected_forcing_vars: list = []
+ 
+-    def _weights_match_forcing_grid(
+-        self, remap_file: Path, sample_forcing_file: Path
+-    ) -> bool:
++    def _weights_match_forcing_grid(self, remap_file: Path, sample_forcing_file: Path) -> bool:
+         """Return True if cached remap weights index the current forcing grid.
+ 
+         Cached EASYMORE weights reference source cells by flat index. If the forcing
+@@ -145,20 +139,20 @@
+             # EASYMORE remap CSVs carry 'rows'/'cols' (source grid extent) and/or a
+             # source-cell id column. Prefer rows*cols; fall back to max source id + 1.
+             weights_cells = None
+-            if 'rows' in w.columns and 'cols' in w.columns:
+-                weights_cells = int(w['rows'].max() + 1) * int(w['cols'].max() + 1)
+-            elif 'ID_s' in w.columns:
+-                weights_cells = int(w['ID_s'].max())  # 1-based count
++            if "rows" in w.columns and "cols" in w.columns:
++                weights_cells = int(w["rows"].max() + 1) * int(w["cols"].max() + 1)
++            elif "ID_s" in w.columns:
++                weights_cells = int(w["ID_s"].max())  # 1-based count
+ 
+             ds = xr.open_dataset(sample_forcing_file)
+             try:
+                 dims = ds.sizes
+-                if 'latitude' in dims and 'longitude' in dims:
+-                    forcing_cells = int(dims['latitude']) * int(dims['longitude'])
+-                elif 'lat' in dims and 'lon' in dims:
+-                    forcing_cells = int(dims['lat']) * int(dims['lon'])
+-                elif {'y', 'x'} <= set(dims):
+-                    forcing_cells = int(dims['y']) * int(dims['x'])
++                if "latitude" in dims and "longitude" in dims:
++                    forcing_cells = int(dims["latitude"]) * int(dims["longitude"])
++                elif "lat" in dims and "lon" in dims:
++                    forcing_cells = int(dims["lat"]) * int(dims["lon"])
++                elif {"y", "x"} <= set(dims):
++                    forcing_cells = int(dims["y"]) * int(dims["x"])
+                 else:
+                     return True  # unknown layout: don't force needless regeneration
+             finally:
+@@ -185,7 +179,7 @@
+         sample_forcing_file: Path,
+         intersect_path: Path,
+         source_shp_path: Path,
+-        target_shp_path: Path
++        target_shp_path: Path,
+     ) -> Path:
+         """
+         Create remapping weights using a sample forcing file.
+@@ -207,17 +201,25 @@
+             target_shp_wgs84, actual_hru_field = target_result
+         else:
+             target_shp_wgs84 = target_result
+-            actual_hru_field = self._get_config_value(lambda: self.config.paths.catchment_hruid, dict_key='CATCHMENT_SHP_HRUID')
++            actual_hru_field = self._get_config_value(
++                lambda: self.config.paths.catchment_hruid, dict_key="CATCHMENT_SHP_HRUID"
++            )
+ 
+         # Cache for reuse during weight application
+         self.cached_target_shp_wgs84 = target_shp_wgs84
+         self.cached_hru_field = actual_hru_field
+-        self.logger.debug(f"Cached target shapefile: {target_shp_wgs84}, HRU field: {actual_hru_field}")
++        self.logger.debug(
++            f"Cached target shapefile: {target_shp_wgs84}, HRU field: {actual_hru_field}"
++        )
+ 
+         # Define remap file path
+-        case_name = f"{self._get_config_value(lambda: self.config.domain.name, dict_key='DOMAIN_NAME')}_{self._get_config_value(lambda: self.config.forcing.dataset, dict_key='FORCING_DATASET')}"
++        domain = self._get_config_value(lambda: self.config.domain.name, dict_key="DOMAIN_NAME")
++        dataset = self._get_config_value(
++            lambda: self.config.forcing.dataset, dict_key="FORCING_DATASET"
++        )
++        case_name = f"{domain}_{dataset}"
+         remap_file = intersect_path / f"{case_name}_{actual_hru_field}_remapping.csv"
+-        remap_nc = remap_file.with_suffix('.nc')
++        remap_nc = remap_file.with_suffix(".nc")
+ 
+         # Check if already exists AND matches the current forcing grid. Cached weights
+         # index a specific source grid; reusing them after the forcing resolution/extent
+@@ -235,13 +237,15 @@
+                     "current forcing (resolution/extent changed). Regenerating weights."
+                 )
+             else:
+-                self.logger.debug("Remapping weights found but intersected shapefile missing. Recreating.")
++                self.logger.debug(
++                    "Remapping weights found but intersected shapefile missing. Recreating."
++                )
+         elif remap_file.exists():
+             self.logger.debug("Remapping CSV found but NetCDF weights missing. Recreating.")
+ 
+         self.logger.debug("Creating remapping weights...")
+ 
+-        temp_dir = resolve_data_subdir(self.project_dir, 'forcing') / 'temp_easymore_weights'
++        temp_dir = resolve_data_subdir(self.project_dir, "forcing") / "temp_easymore_weights"
+         temp_dir.mkdir(parents=True, exist_ok=True)
+ 
+         try:
+@@ -258,7 +262,7 @@
+                 actual_hru_field,
+                 temp_dir,
+                 case_name,
+-                disable_lon_correction
++                disable_lon_correction,
+             )
+ 
+             # Create the weights
+@@ -275,18 +279,17 @@
+                 shutil.rmtree(temp_dir, ignore_errors=True)
+ 
+     def _align_longitudes(
+-        self,
+-        source_shp_wgs84: Path,
+-        target_shp_wgs84: Path,
+-        temp_dir: Path
+-    ) -> Tuple[Path, bool]:
++        self, source_shp_wgs84: Path, target_shp_wgs84: Path, temp_dir: Path
++    ) -> tuple[Path, bool]:
+         """Align target longitudes to 0-360 if source uses that frame."""
+         target_shp_for_easymore = target_shp_wgs84
+         disable_lon_correction = False
+ 
+         try:
+             source_gdf = gpd.read_file(source_shp_wgs84)
+-            source_lon_field = self._get_config_value(lambda: self.config.forcing.shape_lon_name, dict_key='FORCING_SHAPE_LON_NAME')
++            source_lon_field = self._get_config_value(
++                lambda: self.config.forcing.shape_lon_name, dict_key="FORCING_SHAPE_LON_NAME"
++            )
+ 
+             if source_lon_field in source_gdf.columns:
+                 source_lon_max = float(source_gdf[source_lon_field].max())
+@@ -303,7 +306,9 @@
+                             lambda geom: translate(geom, xoff=360) if geom is not None else geom
+                         )
+ 
+-                        target_lon_field = self._get_config_value(lambda: self.config.paths.catchment_lon, dict_key='CATCHMENT_SHP_LON')
++                        target_lon_field = self._get_config_value(
++                            lambda: self.config.paths.catchment_lon, dict_key="CATCHMENT_SHP_LON"
++                        )
+                         if target_lon_field in target_gdf.columns:
+                             target_gdf[target_lon_field] = target_gdf[target_lon_field].apply(
+                                 lambda v: v + 360 if v < 0 else v
+@@ -328,26 +333,36 @@
+         actual_hru_field: str,
+         temp_dir: Path,
+         case_name: str,
+-        disable_lon_correction: bool
++        disable_lon_correction: bool,
+     ):
+         """Configure EASYMORE for weight creation."""
+         esmr = _create_easymore_instance()
+ 
+-        esmr.author_name = 'SUMMA public workflow scripts'
+-        esmr.license = 'Copernicus data use license'
++        esmr.author_name = "SUMMA public workflow scripts"
++        esmr.license = "Copernicus data use license"
+         esmr.case_name = case_name
+         esmr.correction_shp_lon = False
+ 
+         # Shapefile configuration
+         esmr.source_shp = str(source_shp_wgs84)
+-        esmr.source_shp_lat = self._get_config_value(lambda: self.config.forcing.shape_lat_name, dict_key='FORCING_SHAPE_LAT_NAME')
+-        esmr.source_shp_lon = self._get_config_value(lambda: self.config.forcing.shape_lon_name, dict_key='FORCING_SHAPE_LON_NAME')
+-        esmr.source_shp_ID = self._get_config_value(lambda: self.config.forcing.shape_id_name, default='ID')
++        esmr.source_shp_lat = self._get_config_value(
++            lambda: self.config.forcing.shape_lat_name, dict_key="FORCING_SHAPE_LAT_NAME"
++        )
++        esmr.source_shp_lon = self._get_config_value(
++            lambda: self.config.forcing.shape_lon_name, dict_key="FORCING_SHAPE_LON_NAME"
++        )
++        esmr.source_shp_ID = self._get_config_value(
++            lambda: self.config.forcing.shape_id_name, default="ID"
++        )
+ 
+         esmr.target_shp = str(target_shp_for_easymore)
+         esmr.target_shp_ID = actual_hru_field
+-        esmr.target_shp_lat = self._get_config_value(lambda: self.config.paths.catchment_lat, dict_key='CATCHMENT_SHP_LAT')
+-        esmr.target_shp_lon = self._get_config_value(lambda: self.config.paths.catchment_lon, dict_key='CATCHMENT_SHP_LON')
++        esmr.target_shp_lat = self._get_config_value(
++            lambda: self.config.paths.catchment_lat, dict_key="CATCHMENT_SHP_LAT"
++        )
++        esmr.target_shp_lon = self._get_config_value(
++            lambda: self.config.paths.catchment_lon, dict_key="CATCHMENT_SHP_LON"
++        )
+ 
+         # NetCDF configuration
+         var_lat, var_lon = self.dataset_handler.get_coordinate_names()
+@@ -363,24 +378,24 @@
+         esmr.var_names = available_vars
+         esmr.var_lat = var_lat
+         esmr.var_lon = var_lon
+-        esmr.var_time = 'time'
++        esmr.var_time = "time"
+ 
+         if source_nc_resolution is not None:
+             esmr.source_nc_resolution = source_nc_resolution
+ 
+         # Directories
+-        esmr.temp_dir = str(temp_dir) + '/'
+-        esmr.output_dir = str(temp_dir) + '/'
++        esmr.temp_dir = str(temp_dir) + "/"
++        esmr.output_dir = str(temp_dir) + "/"
+ 
+         # Output configuration
+-        esmr.remapped_dim_id = 'hru'
+-        esmr.remapped_var_id = 'hruId'
+-        esmr.format_list = ['f4']
+-        esmr.fill_value_list = ['-9999']
++        esmr.remapped_dim_id = "hru"
++        esmr.remapped_var_id = "hruId"
++        esmr.format_list = ["f4"]
++        esmr.fill_value_list = ["-9999"]
+ 
+         # Weight creation only
+         esmr.only_create_remap_csv = True
+-        if hasattr(esmr, 'only_create_remap_nc'):
++        if hasattr(esmr, "only_create_remap_nc"):
+             esmr.only_create_remap_nc = True
+ 
+         esmr.save_csv = True
+@@ -391,11 +406,8 @@
+         return esmr
+ 
+     def _detect_variables(
+-        self,
+-        sample_file: Path,
+-        var_lat: str,
+-        var_lon: str
+-    ) -> Tuple[list, Optional[float]]:
++        self, sample_file: Path, var_lat: str, var_lon: str
++    ) -> tuple[list, float | None]:
+         """Detect variables and resolution in forcing file."""
+         available_vars = []
+         source_nc_resolution = None
+@@ -404,18 +416,34 @@
+             with xr.open_dataset(sample_file, engine="h5netcdf") as ds:
+                 # CFIF standard variable names (primary)
+                 all_cfif_vars = [
+-                    'surface_air_pressure', 'surface_downwelling_longwave_flux',
+-                    'surface_downwelling_shortwave_flux', 'precipitation_flux',
+-                    'air_temperature', 'specific_humidity', 'wind_speed',
+-                    'relative_humidity', 'eastward_wind', 'northward_wind',
++                    "surface_air_pressure",
++                    "surface_downwelling_longwave_flux",
++                    "surface_downwelling_shortwave_flux",
++                    "precipitation_flux",
++                    "air_temperature",
++                    "specific_humidity",
++                    "wind_speed",
++                    "relative_humidity",
++                    "eastward_wind",
++                    "northward_wind",
++                    "dew_point_temperature",
++                    "air_pressure_at_mean_sea_level",
++                    "surface_downwelling_shortwave_flux_in_air",
++                    "surface_downwelling_longwave_flux_in_air",
+                 ]
+                 available_vars = [v for v in all_cfif_vars if v in ds]
+ 
+                 if not available_vars:
+                     # Fallback: legacy SUMMA-style variable names
+                     all_legacy_vars = [
+-                        'airpres', 'LWRadAtm', 'SWRadAtm', 'pptrate',
+-                        'airtemp', 'spechum', 'windspd', 'relhum',
++                        "airpres",
++                        "LWRadAtm",
++                        "SWRadAtm",
++                        "pptrate",
++                        "airtemp",
++                        "spechum",
++                        "windspd",
++                        "relhum",
+                     ]
+                     available_vars = [v for v in all_legacy_vars if v in ds]
+ 
+@@ -433,8 +461,7 @@
+                     )
+ 
+                 self.logger.info(
+-                    f"Detected {len(available_vars)} "
+-                    f"forcing variables: {available_vars}"
++                    f"Detected {len(available_vars)} forcing variables: {available_vars}"
+                 )
+ 
+                 # Calculate grid resolution
+@@ -455,10 +482,14 @@
+                 else:
+                     lat_size = lon_size = 1
+ 
+-                if lat_size == 1 or lon_size == 1:
++                if lat_size <= 2 or lon_size <= 2:
+                     if lat_vals.ndim == 1:
+-                        res_lat = abs(float(lat_vals[1] - lat_vals[0])) if len(lat_vals) > 1 else 0.25
+-                        res_lon = abs(float(lon_vals[1] - lon_vals[0])) if len(lon_vals) > 1 else 0.25
++                        res_lat = (
++                            abs(float(lat_vals[1] - lat_vals[0])) if len(lat_vals) > 1 else 0.25
++                        )
++                        res_lon = (
++                            abs(float(lon_vals[1] - lon_vals[0])) if len(lon_vals) > 1 else 0.25
++                        )
+                     else:
+                         res_lat = res_lon = 0.25
+ 
+@@ -482,7 +513,7 @@
+             return []
+ 
+         rename_map = {}
+-        if hasattr(self.dataset_handler, 'get_variable_mapping'):
++        if hasattr(self.dataset_handler, "get_variable_mapping"):
+             try:
+                 full_map = self.dataset_handler.get_variable_mapping() or {}
+                 rename_map = {k: v for k, v in full_map.items() if k in ds.variables}
+@@ -501,7 +532,7 @@
+             ds_load = xr.open_dataset(sample_file, engine="h5netcdf").load()
+             try:
+                 ds_proc = self.dataset_handler.process_dataset(ds_load)
+-                tmp = sample_file.with_suffix(sample_file.suffix + '.cfif_tmp')
++                tmp = sample_file.with_suffix(sample_file.suffix + ".cfif_tmp")
+                 ds_proc.to_netcdf(tmp)
+             finally:
+                 ds_load.close()
+@@ -514,11 +545,22 @@
+ 
+         with xr.open_dataset(sample_file, engine="h5netcdf") as ds2:
+             cfif_now = [
+-                v for v in (
+-                    'surface_air_pressure', 'surface_downwelling_longwave_flux',
+-                    'surface_downwelling_shortwave_flux', 'precipitation_flux',
+-                    'air_temperature', 'specific_humidity', 'wind_speed',
+-                    'relative_humidity', 'eastward_wind', 'northward_wind',
++                v
++                for v in (
++                    "surface_air_pressure",
++                    "surface_downwelling_longwave_flux",
++                    "surface_downwelling_shortwave_flux",
++                    "precipitation_flux",
++                    "air_temperature",
++                    "specific_humidity",
++                    "wind_speed",
++                    "relative_humidity",
++                    "eastward_wind",
++                    "northward_wind",
++                    "dew_point_temperature",
++                    "air_pressure_at_mean_sea_level",
++                    "surface_downwelling_shortwave_flux_in_air",
++                    "surface_downwelling_longwave_flux_in_air",
+                 )
+                 if v in ds2
+             ]
+@@ -526,11 +568,7 @@
+         return cfif_now
+ 
+     def _move_output_files(
+-        self,
+-        temp_dir: Path,
+-        intersect_path: Path,
+-        case_name: str,
+-        remap_file: Path
++        self, temp_dir: Path, intersect_path: Path, case_name: str, remap_file: Path
+     ) -> None:
+         """Move output files from temp to final location."""
+         case_remap_csv = temp_dir / f"{case_name}_remapping.csv"
+@@ -563,7 +601,7 @@
+             remap_source.replace(remap_file)
+             self.logger.info(f"Remapping weights created: {remap_file}")
+ 
+-            remap_nc = remap_file.with_suffix('.nc')
++            remap_nc = remap_file.with_suffix(".nc")
+             attr_nc = remap_file.parent / f"{case_name}_attributes.nc"
+ 
+             if case_remap_nc.exists():
+--- upstream/src/symfluence/data/preprocessing/cfif/__init__.py
++++ src/floodcast/data/preprocessing/cfif/__init__.py
+@@ -23,6 +23,7 @@
+     1. Raw data (ERA5, CONUS404, etc.) → Dataset handlers → CFIF format
+     2. CFIF format → Model adapters → Model-specific format (SUMMA, HYPE, etc.)
+ """
++
+ from __future__ import annotations
+ 
+ from .units import (
+@@ -47,20 +48,20 @@
+ 
+ __all__ = [
+     # Variable definitions
+-    'CFIF_VARIABLES',
+-    'SUMMA_TO_CFIF_MAPPING',
+-    'CFIF_TO_SUMMA_MAPPING',
+-    'get_cfif_variable',
+-    'get_cfif_standard_name',
+-    'get_cfif_units',
+-    'normalize_to_cfif',
+-    'validate_cfif_dataset',
++    "CFIF_VARIABLES",
++    "SUMMA_TO_CFIF_MAPPING",
++    "CFIF_TO_SUMMA_MAPPING",
++    "get_cfif_variable",
++    "get_cfif_standard_name",
++    "get_cfif_units",
++    "normalize_to_cfif",
++    "validate_cfif_dataset",
+     # Unit conversions
+-    'UnitConverter',
+-    'convert_temperature',
+-    'convert_precipitation',
+-    'convert_pressure',
+-    'convert_radiation',
+-    'convert_humidity',
+-    'convert_wind',
++    "UnitConverter",
++    "convert_temperature",
++    "convert_precipitation",
++    "convert_pressure",
++    "convert_radiation",
++    "convert_humidity",
++    "convert_wind",
+ ]
+--- upstream/src/symfluence/data/preprocessing/cfif/units.py
++++ src/floodcast/data/preprocessing/cfif/units.py
+@@ -15,9 +15,10 @@
+     - Specific humidity: kg kg-1
+     - Wind speed: m s-1
+ """
++
+ from __future__ import annotations
+ 
+-from typing import TYPE_CHECKING, Dict, Union
++from typing import TYPE_CHECKING, Union
+ 
+ import numpy as np
+ 
+@@ -25,7 +26,7 @@
+     import xarray as xr
+ 
+ # Type alias for array-like data
+-ArrayLike = Union[np.ndarray, float, 'xr.DataArray']
++ArrayLike = Union[np.ndarray, float, "xr.DataArray"]
+ 
+ 
+ class UnitConverter:
+@@ -43,70 +44,64 @@
+ 
+     # Temperature conversions
+     TEMPERATURE_CONVERSIONS = {
+-        ('degC', 'K'): lambda x: x + 273.15,
+-        ('K', 'degC'): lambda x: x - 273.15,
+-        ('degF', 'K'): lambda x: (x - 32) * 5/9 + 273.15,
+-        ('K', 'degF'): lambda x: (x - 273.15) * 9/5 + 32,
+-        ('degC', 'degF'): lambda x: x * 9/5 + 32,
+-        ('degF', 'degC'): lambda x: (x - 32) * 5/9,
++        ("degC", "K"): lambda x: x + 273.15,
++        ("K", "degC"): lambda x: x - 273.15,
++        ("degF", "K"): lambda x: (x - 32) * 5 / 9 + 273.15,
++        ("K", "degF"): lambda x: (x - 273.15) * 9 / 5 + 32,
++        ("degC", "degF"): lambda x: x * 9 / 5 + 32,
++        ("degF", "degC"): lambda x: (x - 32) * 5 / 9,
+     }
+ 
+     # Precipitation conversions (to kg m-2 s-1)
+     # Note: mm = kg m-2 for water (density = 1000 kg/m3)
+     PRECIPITATION_CONVERSIONS = {
+-        ('mm/s', 'kg m-2 s-1'): lambda x: x,  # 1 mm/s = 1 kg m-2 s-1
+-        ('mm/hr', 'kg m-2 s-1'): lambda x: x / 3600,
+-        ('mm/day', 'kg m-2 s-1'): lambda x: x / 86400,
+-        ('m/s', 'kg m-2 s-1'): lambda x: x * 1000,
+-        ('kg m-2 s-1', 'mm/hr'): lambda x: x * 3600,
+-        ('kg m-2 s-1', 'mm/day'): lambda x: x * 86400,
++        ("mm/s", "kg m-2 s-1"): lambda x: x,  # 1 mm/s = 1 kg m-2 s-1
++        ("mm/hr", "kg m-2 s-1"): lambda x: x / 3600,
++        ("mm/day", "kg m-2 s-1"): lambda x: x / 86400,
++        ("m/s", "kg m-2 s-1"): lambda x: x * 1000,
++        ("kg m-2 s-1", "mm/hr"): lambda x: x * 3600,
++        ("kg m-2 s-1", "mm/day"): lambda x: x * 86400,
+     }
+ 
+     # Pressure conversions (to Pa)
+     PRESSURE_CONVERSIONS = {
+-        ('hPa', 'Pa'): lambda x: x * 100,
+-        ('Pa', 'hPa'): lambda x: x / 100,
+-        ('kPa', 'Pa'): lambda x: x * 1000,
+-        ('Pa', 'kPa'): lambda x: x / 1000,
+-        ('mbar', 'Pa'): lambda x: x * 100,  # mbar = hPa
+-        ('Pa', 'mbar'): lambda x: x / 100,
++        ("hPa", "Pa"): lambda x: x * 100,
++        ("Pa", "hPa"): lambda x: x / 100,
++        ("kPa", "Pa"): lambda x: x * 1000,
++        ("Pa", "kPa"): lambda x: x / 1000,
++        ("mbar", "Pa"): lambda x: x * 100,  # mbar = hPa
++        ("Pa", "mbar"): lambda x: x / 100,
+     }
+ 
+     # Wind speed conversions (to m s-1)
+     WIND_CONVERSIONS = {
+-        ('km/hr', 'm s-1'): lambda x: x / 3.6,
+-        ('m s-1', 'km/hr'): lambda x: x * 3.6,
+-        ('mph', 'm s-1'): lambda x: x * 0.44704,
+-        ('m s-1', 'mph'): lambda x: x / 0.44704,
+-        ('knots', 'm s-1'): lambda x: x * 0.514444,
+-        ('m s-1', 'knots'): lambda x: x / 0.514444,
++        ("km/hr", "m s-1"): lambda x: x / 3.6,
++        ("m s-1", "km/hr"): lambda x: x * 3.6,
++        ("mph", "m s-1"): lambda x: x * 0.44704,
++        ("m s-1", "mph"): lambda x: x / 0.44704,
++        ("knots", "m s-1"): lambda x: x * 0.514444,
++        ("m s-1", "knots"): lambda x: x / 0.514444,
+     }
+ 
+     # Humidity conversions
+     HUMIDITY_CONVERSIONS = {
+-        ('g/kg', 'kg kg-1'): lambda x: x / 1000,
+-        ('kg kg-1', 'g/kg'): lambda x: x * 1000,
+-        ('fraction', '%'): lambda x: x * 100,
+-        ('%', 'fraction'): lambda x: x / 100,
++        ("g/kg", "kg kg-1"): lambda x: x / 1000,
++        ("kg kg-1", "g/kg"): lambda x: x * 1000,
++        ("fraction", "%"): lambda x: x * 100,
++        ("%", "fraction"): lambda x: x / 100,
+     }
+ 
+     def __init__(self):
+         """Initialize the converter with all conversion tables."""
+-        self._converters: Dict[str, Dict] = {
+-            'temperature': self.TEMPERATURE_CONVERSIONS,
+-            'precipitation': self.PRECIPITATION_CONVERSIONS,
+-            'pressure': self.PRESSURE_CONVERSIONS,
+-            'wind': self.WIND_CONVERSIONS,
+-            'humidity': self.HUMIDITY_CONVERSIONS,
++        self._converters: dict[str, dict] = {
++            "temperature": self.TEMPERATURE_CONVERSIONS,
++            "precipitation": self.PRECIPITATION_CONVERSIONS,
++            "pressure": self.PRESSURE_CONVERSIONS,
++            "wind": self.WIND_CONVERSIONS,
++            "humidity": self.HUMIDITY_CONVERSIONS,
+         }
+ 
+-    def convert(
+-        self,
+-        var_type: str,
+-        data: ArrayLike,
+-        from_units: str,
+-        to_units: str
+-    ) -> ArrayLike:
++    def convert(self, var_type: str, data: ArrayLike, from_units: str, to_units: str) -> ArrayLike:
+         """
+         Convert data between units.
+ 
+@@ -132,8 +127,7 @@
+         converter = conversions.get((from_units, to_units))
+         if converter is None:
+             raise ValueError(
+-                f"No conversion from '{from_units}' to '{to_units}' "
+-                f"for variable type '{var_type}'"
++                f"No conversion from '{from_units}' to '{to_units}' for variable type '{var_type}'"
+             )
+ 
+         return converter(data)
+@@ -150,10 +144,9 @@
+ 
+ # Convenience functions for common conversions
+ 
++
+ def convert_temperature(
+-    data: ArrayLike,
+-    from_units: str = 'degC',
+-    to_units: str = 'K'
++    data: ArrayLike, from_units: str = "degC", to_units: str = "K"
+ ) -> ArrayLike:
+     """
+     Convert temperature data.
+@@ -167,13 +160,11 @@
+         Converted temperature values
+     """
+     converter = UnitConverter()
+-    return converter.convert('temperature', data, from_units, to_units)
++    return converter.convert("temperature", data, from_units, to_units)
+ 
+ 
+ def convert_precipitation(
+-    data: ArrayLike,
+-    from_units: str = 'mm/hr',
+-    to_units: str = 'kg m-2 s-1'
++    data: ArrayLike, from_units: str = "mm/hr", to_units: str = "kg m-2 s-1"
+ ) -> ArrayLike:
+     """
+     Convert precipitation data.
+@@ -187,14 +178,10 @@
+         Converted precipitation values
+     """
+     converter = UnitConverter()
+-    return converter.convert('precipitation', data, from_units, to_units)
+-
+-
+-def convert_pressure(
+-    data: ArrayLike,
+-    from_units: str = 'hPa',
+-    to_units: str = 'Pa'
+-) -> ArrayLike:
++    return converter.convert("precipitation", data, from_units, to_units)
++
++
++def convert_pressure(data: ArrayLike, from_units: str = "hPa", to_units: str = "Pa") -> ArrayLike:
+     """
+     Convert pressure data.
+ 
+@@ -207,7 +194,7 @@
+         Converted pressure values
+     """
+     converter = UnitConverter()
+-    return converter.convert('pressure', data, from_units, to_units)
++    return converter.convert("pressure", data, from_units, to_units)
+ 
+ 
+ def convert_radiation(data: ArrayLike, from_units: str, to_units: str) -> ArrayLike:
+@@ -232,9 +219,7 @@
+ 
+ 
+ def convert_humidity(
+-    data: ArrayLike,
+-    from_units: str = 'g/kg',
+-    to_units: str = 'kg kg-1'
++    data: ArrayLike, from_units: str = "g/kg", to_units: str = "kg kg-1"
+ ) -> ArrayLike:
+     """
+     Convert humidity data.
+@@ -248,14 +233,10 @@
+         Converted humidity values
+     """
+     converter = UnitConverter()
+-    return converter.convert('humidity', data, from_units, to_units)
+-
+-
+-def convert_wind(
+-    data: ArrayLike,
+-    from_units: str = 'km/hr',
+-    to_units: str = 'm s-1'
+-) -> ArrayLike:
++    return converter.convert("humidity", data, from_units, to_units)
++
++
++def convert_wind(data: ArrayLike, from_units: str = "km/hr", to_units: str = "m s-1") -> ArrayLike:
+     """
+     Convert wind speed data.
+ 
+@@ -268,4 +249,4 @@
+         Converted wind speed values
+     """
+     converter = UnitConverter()
+-    return converter.convert('wind', data, from_units, to_units)
++    return converter.convert("wind", data, from_units, to_units)
+--- upstream/src/symfluence/data/preprocessing/cfif/variables.py
++++ src/floodcast/data/preprocessing/cfif/variables.py
+@@ -20,143 +20,135 @@
+     - Humidity: kg kg-1 (specific) or % (relative)
+     - Wind: m s-1 (meters per second)
+ """
++
+ from __future__ import annotations
+ 
+ import logging
+-from typing import Dict, List, Optional
+ 
+ logger = logging.getLogger(__name__)
+ 
+ 
+ # Core CFIF variable definitions
+ # Each entry contains: cf_standard_name, units, long_name, description
+-CFIF_VARIABLES: Dict[str, Dict[str, str]] = {
++CFIF_VARIABLES: dict[str, dict[str, str]] = {
+     # Temperature
+-    'air_temperature': {
+-        'cf_standard_name': 'air_temperature',
+-        'units': 'K',
+-        'long_name': 'Near-surface air temperature',
+-        'description': 'Temperature of air at 2m above surface',
+-    },
+-
++    "air_temperature": {
++        "cf_standard_name": "air_temperature",
++        "units": "K",
++        "long_name": "Near-surface air temperature",
++        "description": "Temperature of air at 2m above surface",
++    },
+     # Precipitation
+-    'precipitation_flux': {
+-        'cf_standard_name': 'precipitation_flux',
+-        'units': 'kg m-2 s-1',
+-        'long_name': 'Precipitation rate',
+-        'description': 'Total precipitation rate (liquid + solid)',
+-    },
+-
++    "precipitation_flux": {
++        "cf_standard_name": "precipitation_flux",
++        "units": "kg m-2 s-1",
++        "long_name": "Precipitation rate",
++        "description": "Total precipitation rate (liquid + solid)",
++    },
+     # Radiation
+-    'surface_downwelling_shortwave_flux': {
+-        'cf_standard_name': 'surface_downwelling_shortwave_flux_in_air',
+-        'units': 'W m-2',
+-        'long_name': 'Downward shortwave radiation',
+-        'description': 'Incoming solar radiation at surface',
+-    },
+-    'surface_downwelling_longwave_flux': {
+-        'cf_standard_name': 'surface_downwelling_longwave_flux_in_air',
+-        'units': 'W m-2',
+-        'long_name': 'Downward longwave radiation',
+-        'description': 'Incoming thermal radiation at surface',
+-    },
+-
++    "surface_downwelling_shortwave_flux": {
++        "cf_standard_name": "surface_downwelling_shortwave_flux_in_air",
++        "units": "W m-2",
++        "long_name": "Downward shortwave radiation",
++        "description": "Incoming solar radiation at surface",
++    },
++    "surface_downwelling_longwave_flux": {
++        "cf_standard_name": "surface_downwelling_longwave_flux_in_air",
++        "units": "W m-2",
++        "long_name": "Downward longwave radiation",
++        "description": "Incoming thermal radiation at surface",
++    },
+     # Humidity
+-    'specific_humidity': {
+-        'cf_standard_name': 'specific_humidity',
+-        'units': 'kg kg-1',
+-        'long_name': 'Specific humidity',
+-        'description': 'Mass of water vapor per mass of moist air',
+-    },
+-    'relative_humidity': {
+-        'cf_standard_name': 'relative_humidity',
+-        'units': '%',
+-        'long_name': 'Relative humidity',
+-        'description': 'Ratio of actual to saturation vapor pressure',
+-    },
+-
++    "specific_humidity": {
++        "cf_standard_name": "specific_humidity",
++        "units": "kg kg-1",
++        "long_name": "Specific humidity",
++        "description": "Mass of water vapor per mass of moist air",
++    },
++    "relative_humidity": {
++        "cf_standard_name": "relative_humidity",
++        "units": "%",
++        "long_name": "Relative humidity",
++        "description": "Ratio of actual to saturation vapor pressure",
++    },
+     # Wind
+-    'wind_speed': {
+-        'cf_standard_name': 'wind_speed',
+-        'units': 'm s-1',
+-        'long_name': 'Wind speed',
+-        'description': 'Magnitude of wind velocity at 10m',
+-    },
+-    'eastward_wind': {
+-        'cf_standard_name': 'eastward_wind',
+-        'units': 'm s-1',
+-        'long_name': 'Eastward wind component',
+-        'description': 'U-component of wind at 10m',
+-    },
+-    'northward_wind': {
+-        'cf_standard_name': 'northward_wind',
+-        'units': 'm s-1',
+-        'long_name': 'Northward wind component',
+-        'description': 'V-component of wind at 10m',
+-    },
+-
++    "wind_speed": {
++        "cf_standard_name": "wind_speed",
++        "units": "m s-1",
++        "long_name": "Wind speed",
++        "description": "Magnitude of wind velocity at 10m",
++    },
++    "eastward_wind": {
++        "cf_standard_name": "eastward_wind",
++        "units": "m s-1",
++        "long_name": "Eastward wind component",
++        "description": "U-component of wind at 10m",
++    },
++    "northward_wind": {
++        "cf_standard_name": "northward_wind",
++        "units": "m s-1",
++        "long_name": "Northward wind component",
++        "description": "V-component of wind at 10m",
++    },
+     # Pressure
+-    'surface_air_pressure': {
+-        'cf_standard_name': 'surface_air_pressure',
+-        'units': 'Pa',
+-        'long_name': 'Surface air pressure',
+-        'description': 'Atmospheric pressure at surface',
+-    },
+-
++    "surface_air_pressure": {
++        "cf_standard_name": "surface_air_pressure",
++        "units": "Pa",
++        "long_name": "Surface air pressure",
++        "description": "Atmospheric pressure at surface",
++    },
+     # Additional variables for specific models
+-    'snowfall_flux': {
+-        'cf_standard_name': 'snowfall_flux',
+-        'units': 'kg m-2 s-1',
+-        'long_name': 'Snowfall rate',
+-        'description': 'Solid precipitation rate',
+-    },
+-    'rainfall_flux': {
+-        'cf_standard_name': 'rainfall_flux',
+-        'units': 'kg m-2 s-1',
+-        'long_name': 'Rainfall rate',
+-        'description': 'Liquid precipitation rate',
+-    },
+-    'air_temperature_min': {
+-        'cf_standard_name': 'air_temperature',
+-        'units': 'K',
+-        'long_name': 'Minimum air temperature',
+-        'description': 'Daily minimum temperature',
+-        'cell_methods': 'time: minimum',
+-    },
+-    'air_temperature_max': {
+-        'cf_standard_name': 'air_temperature',
+-        'units': 'K',
+-        'long_name': 'Maximum air temperature',
+-        'description': 'Daily maximum temperature',
+-        'cell_methods': 'time: maximum',
+-    },
+-    'potential_evapotranspiration': {
+-        'cf_standard_name': 'water_potential_evaporation_flux',
+-        'units': 'kg m-2 s-1',
+-        'long_name': 'Potential evapotranspiration',
+-        'description': 'Reference evapotranspiration rate',
++    "snowfall_flux": {
++        "cf_standard_name": "snowfall_flux",
++        "units": "kg m-2 s-1",
++        "long_name": "Snowfall rate",
++        "description": "Solid precipitation rate",
++    },
++    "rainfall_flux": {
++        "cf_standard_name": "rainfall_flux",
++        "units": "kg m-2 s-1",
++        "long_name": "Rainfall rate",
++        "description": "Liquid precipitation rate",
++    },
++    "air_temperature_min": {
++        "cf_standard_name": "air_temperature",
++        "units": "K",
++        "long_name": "Minimum air temperature",
++        "description": "Daily minimum temperature",
++        "cell_methods": "time: minimum",
++    },
++    "air_temperature_max": {
++        "cf_standard_name": "air_temperature",
++        "units": "K",
++        "long_name": "Maximum air temperature",
++        "description": "Daily maximum temperature",
++        "cell_methods": "time: maximum",
++    },
++    "potential_evapotranspiration": {
++        "cf_standard_name": "water_potential_evaporation_flux",
++        "units": "kg m-2 s-1",
++        "long_name": "Potential evapotranspiration",
++        "description": "Reference evapotranspiration rate",
+     },
+ }
+ 
+ 
+ # Mapping from legacy SUMMA variable names to CFIF names
+-SUMMA_TO_CFIF_MAPPING: Dict[str, str] = {
+-    'airtemp': 'air_temperature',
+-    'pptrate': 'precipitation_flux',
+-    'SWRadAtm': 'surface_downwelling_shortwave_flux',
+-    'LWRadAtm': 'surface_downwelling_longwave_flux',
+-    'spechum': 'specific_humidity',
+-    'relhum': 'relative_humidity',
+-    'windspd': 'wind_speed',
+-    'windspd_u': 'eastward_wind',
+-    'windspd_v': 'northward_wind',
+-    'airpres': 'surface_air_pressure',
++SUMMA_TO_CFIF_MAPPING: dict[str, str] = {
++    "airtemp": "air_temperature",
++    "pptrate": "precipitation_flux",
++    "SWRadAtm": "surface_downwelling_shortwave_flux",
++    "LWRadAtm": "surface_downwelling_longwave_flux",
++    "spechum": "specific_humidity",
++    "relhum": "relative_humidity",
++    "windspd": "wind_speed",
++    "windspd_u": "eastward_wind",
++    "windspd_v": "northward_wind",
++    "airpres": "surface_air_pressure",
+ }
+ 
+ # Reverse mapping: CFIF names to SUMMA names
+-CFIF_TO_SUMMA_MAPPING: Dict[str, str] = {
+-    v: k for k, v in SUMMA_TO_CFIF_MAPPING.items()
+-}
++CFIF_TO_SUMMA_MAPPING: dict[str, str] = {v: k for k, v in SUMMA_TO_CFIF_MAPPING.items()}
+ 
+ 
+ def normalize_to_cfif(ds):
+@@ -173,12 +165,11 @@
+     Returns:
+         Dataset with CFIF variable names (unchanged if already CFIF-named)
+     """
+-    renames = {k: v for k, v in SUMMA_TO_CFIF_MAPPING.items()
+-               if k in ds and v not in ds}
++    renames = {k: v for k, v in SUMMA_TO_CFIF_MAPPING.items() if k in ds and v not in ds}
+     return ds.rename(renames) if renames else ds
+ 
+ 
+-def get_cfif_variable(name: str) -> Optional[Dict[str, str]]:
++def get_cfif_variable(name: str) -> dict[str, str] | None:
+     """
+     Get variable definition by CFIF name.
+ 
+@@ -191,7 +182,7 @@
+     return CFIF_VARIABLES.get(name)
+ 
+ 
+-def get_cfif_standard_name(name: str) -> Optional[str]:
++def get_cfif_standard_name(name: str) -> str | None:
+     """
+     Get CF standard_name for a CFIF variable.
+ 
+@@ -202,10 +193,10 @@
+         CF standard_name string, or None if not found
+     """
+     var_info = get_cfif_variable(name)
+-    return var_info.get('cf_standard_name') if var_info else None
+-
+-
+-def get_cfif_units(name: str) -> Optional[str]:
++    return var_info.get("cf_standard_name") if var_info else None
++
++
++def get_cfif_units(name: str) -> str | None:
+     """
+     Get standard units for a CFIF variable.
+ 
+@@ -216,10 +207,10 @@
+         Units string, or None if not found
+     """
+     var_info = get_cfif_variable(name)
+-    return var_info.get('units') if var_info else None
+-
+-
+-def validate_cfif_dataset(ds, required_vars: Optional[List[str]] = None) -> List[str]:
++    return var_info.get("units") if var_info else None
++
++
++def validate_cfif_dataset(ds, required_vars: list[str] | None = None) -> list[str]:
+     """
+     Validate that a dataset conforms to CFIF conventions.
+ 
+@@ -245,8 +236,8 @@
+             expected = CFIF_VARIABLES[var]
+ 
+             # Check units
+-            if 'units' in ds[var].attrs:
+-                if ds[var].attrs['units'] != expected['units']:
++            if "units" in ds[var].attrs:
++                if ds[var].attrs["units"] != expected["units"]:
+                     issues.append(
+                         f"Variable {var}: expected units '{expected['units']}', "
+                         f"got '{ds[var].attrs['units']}'"
+--- upstream/src/symfluence/core/mixins/config.py
++++ src/floodcast/data/preprocessing/resampling/_config.py
+@@ -6,12 +6,14 @@
+ 
+ Provides standardized access to typed SymfluenceConfig configuration.
+ """
++
+ from __future__ import annotations
+ 
+-from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, cast
++from collections.abc import Callable
++from typing import TYPE_CHECKING, Any, cast
+ 
+ if TYPE_CHECKING:
+-    from symfluence.core.config.models import SymfluenceConfig
++    from typing import Any as SymfluenceConfig
+ 
+ 
+ class ConfigMixin:
+@@ -24,17 +26,17 @@
+     """
+ 
+     @property
+-    def config(self) -> 'SymfluenceConfig':  # type: ignore[misc]
++    def config(self) -> SymfluenceConfig:  # type: ignore[misc]
+         """
+         Get the typed configuration object.
+ 
+         Returns:
+             SymfluenceConfig instance
+         """
+-        return cast('SymfluenceConfig', getattr(self, '_config', None))
++        return cast("SymfluenceConfig", getattr(self, "_config", None))
+ 
+     @config.setter
+-    def config(self, value: 'SymfluenceConfig') -> None:
++    def config(self, value: SymfluenceConfig) -> None:
+         """
+         Set the typed configuration object.
+ 
+@@ -44,7 +46,7 @@
+         self._config = value
+ 
+     @property
+-    def config_dict(self) -> Dict[str, Any]:
++    def config_dict(self) -> dict[str, Any]:
+         """
+         Get configuration as a flattened dictionary.
+ 
+@@ -56,7 +58,7 @@
+             Flattened configuration dictionary with uppercase keys
+         """
+         # Check for override dict first
+-        if hasattr(self, '_config_dict_override') and self._config_dict_override is not None:
++        if hasattr(self, "_config_dict_override") and self._config_dict_override is not None:
+             return self._config_dict_override
+         cfg = self.config
+         if cfg is not None:
+@@ -67,7 +69,7 @@
+         return {}
+ 
+     @config_dict.setter
+-    def config_dict(self, value: Dict[str, Any]) -> None:
++    def config_dict(self, value: dict[str, Any]) -> None:
+         """
+         Set the configuration dictionary override.
+ 
+@@ -80,10 +82,7 @@
+         self._config_dict_override = value
+ 
+     def _get_config_value(
+-        self,
+-        typed_accessor: Callable[[], Any],
+-        default: Any = None,
+-        dict_key: Optional[str] = None
++        self, typed_accessor: Callable[[], Any], default: Any = None, dict_key: str | None = None
+     ) -> Any:
+         """
+         Get a configuration value from typed config with default fallback.
+@@ -112,7 +111,11 @@
+             )
+         """
+         # Check override dict first (for testing and explicit overrides)
+-        if dict_key is not None and hasattr(self, '_config_dict_override') and self._config_dict_override is not None:
++        if (
++            dict_key is not None
++            and hasattr(self, "_config_dict_override")
++            and self._config_dict_override is not None
++        ):
+             if dict_key in self._config_dict_override:
+                 return self._config_dict_override[dict_key]
+ 
+@@ -130,14 +133,14 @@
+                 value = cfg.get(dict_key)
+                 if value is not None:
+                     return value
+-            elif hasattr(cfg, 'get'):
++            elif hasattr(cfg, "get"):
+                 value = cfg.get(dict_key)
+                 if value is not None:
+                     return value
+ 
+         return default
+ 
+-    def _resolve_point_bbox(self) -> Optional[str]:
++    def _resolve_point_bbox(self) -> str | None:
+         """Derive a square bounding box from the pour point for point domains.
+ 
+         Single source of truth shared by the point delineator and the data
+@@ -151,25 +154,32 @@
+             or ``None`` when the domain is not a point domain or no parseable
+             pour point is configured (callers decide whether that is an error).
+         """
+-        method = str(self._get_config_value(
+-            lambda: self.config.domain.definition_method, default='',
+-            dict_key='DOMAIN_DEFINITION_METHOD') or '').lower()
+-        if method != 'point':
++        method = str(
++            self._get_config_value(
++                lambda: self.config.domain.definition_method,
++                default="",
++                dict_key="DOMAIN_DEFINITION_METHOD",
++            )
++            or ""
++        ).lower()
++        if method != "point":
+             return None
+ 
+         pour_point = self._get_config_value(
+-            lambda: self.config.domain.pour_point_coords, default=None,
+-            dict_key='POUR_POINT_COORDS')
++            lambda: self.config.domain.pour_point_coords, default=None, dict_key="POUR_POINT_COORDS"
++        )
+         if not pour_point:
+             return None
+         try:
+-            lat, lon = (float(part) for part in str(pour_point).split('/'))
++            lat, lon = (float(part) for part in str(pour_point).split("/"))
+         except (ValueError, TypeError):
+             return None
+ 
+         buffer = self._get_config_value(
+-            lambda: self.config.domain.delineation.point_buffer_distance, default=None,
+-            dict_key='POINT_BUFFER_DISTANCE')
++            lambda: self.config.domain.delineation.point_buffer_distance,
++            default=None,
++            dict_key="POINT_BUFFER_DISTANCE",
++        )
+         buffer = 0.01 if buffer is None else float(buffer)
+         return f"{lat + buffer}/{lon - buffer}/{lat - buffer}/{lon + buffer}"
+ 
+@@ -180,13 +190,11 @@
+     @property
+     def experiment_id(self) -> str:
+         """Experiment identifier from config.domain.experiment_id."""
+-        _experiment_id = getattr(self, '_experiment_id', None)
++        _experiment_id = getattr(self, "_experiment_id", None)
+         if _experiment_id is not None:
+             return _experiment_id
+         return self._get_config_value(
+-            lambda: self.config.domain.experiment_id,
+-            default='run_1',
+-            dict_key='EXPERIMENT_ID'
++            lambda: self.config.domain.experiment_id, default="run_1", dict_key="EXPERIMENT_ID"
+         )
+ 
+     @experiment_id.setter
+@@ -199,33 +207,24 @@
+         """Domain definition method from config.domain.definition_method."""
+         return self._get_config_value(
+             lambda: self.config.domain.definition_method,
+-            default='lumped',
+-            dict_key='DOMAIN_DEFINITION_METHOD'
++            default="lumped",
++            dict_key="DOMAIN_DEFINITION_METHOD",
+         )
+ 
+     @property
+-    def time_start(self) -> Optional[str]:
++    def time_start(self) -> str | None:
+         """Experiment start time from config.domain.time_start."""
+-        return self._get_config_value(
+-            lambda: self.config.domain.time_start,
+-            default=None
+-        )
+-
+-    @property
+-    def time_end(self) -> Optional[str]:
++        return self._get_config_value(lambda: self.config.domain.time_start, default=None)
++
++    @property
++    def time_end(self) -> str | None:
+         """Experiment end time from config.domain.time_end."""
+-        return self._get_config_value(
+-            lambda: self.config.domain.time_end,
+-            default=None
+-        )
++        return self._get_config_value(lambda: self.config.domain.time_end, default=None)
+ 
+     @property
+     def sub_grid_discretization(self) -> str:
+         """Sub-grid discretization method from config.domain.discretization."""
+-        return self._get_config_value(
+-            lambda: self.config.domain.discretization,
+-            default='lumped'
+-        )
++        return self._get_config_value(lambda: self.config.domain.discretization, default="lumped")
+ 
+     @property
+     def domain_discretization(self) -> str:
+@@ -233,15 +232,12 @@
+         return self.sub_grid_discretization
+ 
+     @property
+-    def calibration_period(self) -> Optional[str]:
++    def calibration_period(self) -> str | None:
+         """Calibration period string from config.domain.calibration_period."""
+-        _calibration_period = getattr(self, '_calibration_period', None)
++        _calibration_period = getattr(self, "_calibration_period", None)
+         if _calibration_period is not None:
+             return _calibration_period
+-        return self._get_config_value(
+-            lambda: self.config.domain.calibration_period,
+-            default=None
+-        )
++        return self._get_config_value(lambda: self.config.domain.calibration_period, default=None)
+ 
+     @calibration_period.setter
+     def calibration_period(self, value) -> None:
+@@ -249,23 +245,17 @@
+         self._calibration_period = value
+ 
+     @property
+-    def spinup_period(self) -> Optional[str]:
++    def spinup_period(self) -> str | None:
+         """Spinup period string from config.domain.spinup_period."""
+-        return self._get_config_value(
+-            lambda: self.config.domain.spinup_period,
+-            default=None
+-        )
+-
+-    @property
+-    def evaluation_period(self) -> Optional[str]:
++        return self._get_config_value(lambda: self.config.domain.spinup_period, default=None)
++
++    @property
++    def evaluation_period(self) -> str | None:
+         """Evaluation period string from config.domain.evaluation_period."""
+-        _evaluation_period = getattr(self, '_evaluation_period', None)
++        _evaluation_period = getattr(self, "_evaluation_period", None)
+         if _evaluation_period is not None:
+             return _evaluation_period
+-        return self._get_config_value(
+-            lambda: self.config.domain.evaluation_period,
+-            default=None
+-        )
++        return self._get_config_value(lambda: self.config.domain.evaluation_period, default=None)
+ 
+     @evaluation_period.setter
+     def evaluation_period(self, value) -> None:
+@@ -276,12 +266,9 @@
+     def forcing_dataset(self) -> str:
+         """Forcing dataset name from config.forcing.dataset."""
+         # Allow override via _forcing_dataset_override attribute
+-        if hasattr(self, '_forcing_dataset_override') and self._forcing_dataset_override:
++        if hasattr(self, "_forcing_dataset_override") and self._forcing_dataset_override:
+             return self._forcing_dataset_override.lower()
+-        return self._get_config_value(
+-            lambda: self.config.forcing.dataset,
+-            default=''
+-        ).lower()
++        return self._get_config_value(lambda: self.config.forcing.dataset, default="").lower()
+ 
+     @forcing_dataset.setter
+     def forcing_dataset(self, value: str) -> None:
+@@ -291,35 +278,23 @@
+     @property
+     def forcing_time_step_size(self) -> int:
+         """Forcing time step size in seconds from config.forcing.time_step_size."""
+-        return int(self._get_config_value(
+-            lambda: self.config.forcing.time_step_size,
+-            default=3600
+-        ))
++        return int(self._get_config_value(lambda: self.config.forcing.time_step_size, default=3600))
+ 
+     @property
+     def hydrological_model(self) -> str:
+         """Hydrological model name from config.model.hydrological_model."""
+-        model = self._get_config_value(
+-            lambda: self.config.model.hydrological_model,
+-            default=''
+-        )
++        model = self._get_config_value(lambda: self.config.model.hydrological_model, default="")
+         # Handle list case (multi-model)
+         if isinstance(model, list):
+-            return model[0] if model else ''
++            return model[0] if model else ""
+         return model
+ 
+     @property
+     def routing_model(self) -> str:
+         """Routing model name from config.model.routing_model."""
+-        return self._get_config_value(
+-            lambda: self.config.model.routing_model,
+-            default='none'
+-        )
++        return self._get_config_value(lambda: self.config.model.routing_model, default="none")
+ 
+     @property
+     def optimization_metric(self) -> str:
+         """Optimization metric from config.optimization.metric."""
+-        return self._get_config_value(
+-            lambda: self.config.optimization.metric,
+-            default='KGE'
+-        )
++        return self._get_config_value(lambda: self.config.optimization.metric, default="KGE")
+--- upstream/src/symfluence/core/hdf5_safety.py
++++ src/floodcast/data/preprocessing/resampling/_hdf5_safety.py
+@@ -26,13 +26,13 @@
+     env = get_worker_environment()
+     subprocess.run(cmd, env=env)
+ """
++
+ from __future__ import annotations
+ 
+ import gc
+ import logging
+ import os
+ from pathlib import Path
+-from typing import Dict, Optional
+ 
+ logger = logging.getLogger(__name__)
+ 
+@@ -40,21 +40,21 @@
+ # Environment Variable Constants
+ # =============================================================================
+ 
+-HDF5_ENV_VARS: Dict[str, str] = {
+-    'HDF5_USE_FILE_LOCKING': 'FALSE',
+-    'HDF5_DISABLE_VERSION_CHECK': '1',
+-    'NETCDF_DISABLE_LOCKING': '1',
++HDF5_ENV_VARS: dict[str, str] = {
++    "HDF5_USE_FILE_LOCKING": "FALSE",
++    "HDF5_DISABLE_VERSION_CHECK": "1",
++    "NETCDF_DISABLE_LOCKING": "1",
+ }
+ """Environment variables for HDF5/netCDF file locking safety."""
+ 
+ 
+-THREAD_ENV_VARS: Dict[str, str] = {
+-    'OMP_NUM_THREADS': '1',
+-    'MKL_NUM_THREADS': '1',
+-    'OPENBLAS_NUM_THREADS': '1',
+-    'VECLIB_MAXIMUM_THREADS': '1',
+-    'NUMEXPR_NUM_THREADS': '1',
+-    'KMP_DUPLICATE_LIB_OK': 'TRUE',  # Prevent OpenMP conflicts on macOS
++THREAD_ENV_VARS: dict[str, str] = {
++    "OMP_NUM_THREADS": "1",
++    "MKL_NUM_THREADS": "1",
++    "OPENBLAS_NUM_THREADS": "1",
++    "VECLIB_MAXIMUM_THREADS": "1",
++    "NUMEXPR_NUM_THREADS": "1",
++    "KMP_DUPLICATE_LIB_OK": "TRUE",  # Prevent OpenMP conflicts on macOS
+ }
+ """Environment variables to force single-threaded execution in numerical libraries."""
+ 
+@@ -68,6 +68,7 @@
+ # =============================================================================
+ # Configuration Functions
+ # =============================================================================
++
+ 
+ def configure_hdf5_safety(disable_tqdm_monitor: bool = True) -> None:
+     """
+@@ -98,6 +99,7 @@
+     # Configure xarray to minimize file caching
+     try:
+         import xarray as xr
++
+         xr.set_options(
+             file_cache_maxsize=1,  # Minimal file cache
+         )
+@@ -114,7 +116,7 @@
+         _disable_tqdm_monitor()
+ 
+ 
+-def get_worker_environment(include_thread_limits: bool = True) -> Dict[str, str]:
++def get_worker_environment(include_thread_limits: bool = True) -> dict[str, str]:
+     """
+     Get environment variables for worker processes.
+ 
+@@ -146,7 +148,7 @@
+     os.environ.update(env_vars)
+ 
+ 
+-def merge_with_current_env(include_thread_limits: bool = True) -> Dict[str, str]:
++def merge_with_current_env(include_thread_limits: bool = True) -> dict[str, str]:
+     """
+     Create a copy of the current environment merged with worker settings.
+ 
+@@ -176,15 +178,15 @@
+ 
+         # Try different cache clearing approaches for various xarray versions
+         # xarray >= 0.19: CachingFileManager uses a module-level cache
+-        if hasattr(xr.backends, 'file_manager'):
++        if hasattr(xr.backends, "file_manager"):
+             fm = xr.backends.file_manager
+             # Old style cache (xarray < 2022)
+-            if hasattr(fm, 'FILE_CACHE'):
++            if hasattr(fm, "FILE_CACHE"):
+                 fm.FILE_CACHE.clear()
+             # Try to find CachingFileManager's cache
+-            if hasattr(fm, 'CachingFileManager'):
++            if hasattr(fm, "CachingFileManager"):
+                 cfm = fm.CachingFileManager
+-                cache = getattr(cfm, '_cache', None)
++                cache = getattr(cfm, "_cache", None)
+                 if cache is not None:
+                     try:
+                         cache.clear()
+@@ -192,10 +194,10 @@
+                         pass
+ 
+         # Also try closing any open file handles via the backends
+-        for backend_name in ['netcdf4', 'h5netcdf', 'scipy']:
++        for backend_name in ["netcdf4", "h5netcdf", "scipy"]:
+             try:
+-                backend_mod = getattr(xr.backends, f'{backend_name}_', None)
+-                if backend_mod and hasattr(backend_mod, '_clear_cache'):
++                backend_mod = getattr(xr.backends, f"{backend_name}_", None)
++                if backend_mod and hasattr(backend_mod, "_clear_cache"):
+                     backend_mod._clear_cache()
+             except (AttributeError, TypeError):
+                 pass
+@@ -206,8 +208,9 @@
+     # Also try to clear netCDF4's internal cache if available
+     try:
+         import netCDF4 as nc4
++
+         # netCDF4 doesn't have a public cache API, but we can trigger cleanup
+-        if hasattr(nc4, '_clear_cache'):
++        if hasattr(nc4, "_clear_cache"):
+             nc4._clear_cache()
+     except (ImportError, AttributeError):
+         pass
+@@ -221,7 +224,8 @@
+ # Internal Helpers
+ # =============================================================================
+ 
+-def _find_bundled_libhdf5(pkg_name: str) -> Optional[Path]:
++
++def _find_bundled_libhdf5(pkg_name: str) -> Path | None:
+     """Find a bundled libhdf5 shipped inside a pip wheel for *pkg_name*.
+ 
+     Pip wheels for h5py and netCDF4 vendor their own private copy of
+@@ -235,6 +239,7 @@
+     """
+     try:
+         import importlib.util
++
+         spec = importlib.util.find_spec(pkg_name)
+         if spec is None or spec.origin is None:
+             return None
+@@ -243,8 +248,8 @@
+         # Linux pip wheels: <site-packages>/<pkg>.libs/libhdf5-*.so*
+         # macOS pip wheels: <site-packages>/<pkg>/.dylibs/libhdf5*.dylib
+         search_dirs = [
+-            pkg_dir.parent / f"{pkg_name}.libs",      # Linux
+-            pkg_dir / ".dylibs",                       # macOS (inside pkg)
++            pkg_dir.parent / f"{pkg_name}.libs",  # Linux
++            pkg_dir / ".dylibs",  # macOS (inside pkg)
+         ]
+         # netCDF4 pip wheel uses the distribution name "netcdf4" (lowercase)
+         if pkg_name == "netCDF4":
+@@ -255,7 +260,7 @@
+                 continue
+             for f in d.iterdir():
+                 name = f.name.lower()
+-                if 'libhdf5' in name and 'libhdf5_hl' not in name:
++                if "libhdf5" in name and "libhdf5_hl" not in name:
+                     return f.resolve()
+     except Exception:  # noqa: BLE001
+         pass
+@@ -280,8 +285,8 @@
+     """
+     global hdf5_library_conflict
+ 
+-    h5py_lib = _find_bundled_libhdf5('h5py')
+-    nc4_lib = _find_bundled_libhdf5('netCDF4')
++    h5py_lib = _find_bundled_libhdf5("h5py")
++    nc4_lib = _find_bundled_libhdf5("netCDF4")
+ 
+     if h5py_lib is None or nc4_lib is None:
+         # At least one package doesn't bundle its own libhdf5 (likely
+@@ -313,6 +318,7 @@
+     """Disable tqdm's background monitor thread."""
+     try:
+         import tqdm
++
+         tqdm.tqdm.monitor_interval = 0
+         if tqdm.tqdm.monitor is not None:
+             try:
+@@ -367,8 +373,9 @@
+     # Disable xarray's file caching to prevent cache-related segfaults
+     try:
+         import xarray as xr
++
+         # Set cache size to 0 to disable caching
+-        if hasattr(xr.backends, 'file_manager'):
++        if hasattr(xr.backends, "file_manager"):
+             xr.set_options(file_cache_maxsize=1)  # Minimal cache
+     except (ImportError, AttributeError):
+         pass
+@@ -379,8 +386,9 @@
+     # Try to close any open netCDF4 datasets
+     try:
+         import netCDF4 as nc4
++
+         # netCDF4 tracks open datasets internally in some versions
+-        if hasattr(nc4, '_active_datasets'):
++        if hasattr(nc4, "_active_datasets"):
+             for ds in list(nc4._active_datasets):
+                 try:
+                     ds.close()
+--- upstream/src/symfluence/models/adapters/base_adapter.py
++++ src/floodcast/core/modeling/forcing_adapter.py
+@@ -16,10 +16,10 @@
+ 
+ import xarray as xr
+ 
+-from symfluence.core.mixins import ConfigMixin
++from floodcast.data.preprocessing.resampling._config import ConfigMixin
+ 
+ if TYPE_CHECKING:
+-    from symfluence.core.config.models import SymfluenceConfig
++    from floodcast.data.config import DataConfig as SymfluenceConfig
+ 
+ logger = logging.getLogger(__name__)
+ 
+--- upstream/src/symfluence/models/summa/forcing_adapter.py
++++ src/floodcast/models/summa/forcing_adapter.py
+@@ -14,11 +14,9 @@
+ 
+ import xarray as xr
+ 
+-from symfluence.core.registries import R
+-from symfluence.models.adapters import ForcingAdapter
++from floodcast.core.modeling.forcing_adapter import ForcingAdapter
+ 
+ 
+-@R.forcing_adapters.add('SUMMA')
+ class SUMMAForcingAdapter(ForcingAdapter):
+     """
+     Forcing adapter for SUMMA model.
+--- upstream/src/symfluence/data/base_registry.py
++++ src/floodcast/data/base_registry.py
+@@ -1,168 +1,100 @@
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ # Copyright (C) 2024-2026 SYMFLUENCE Team <dev@symfluence.org>
++"""SYMFLUENCE handler lookup, bound to one Floodcast application.
+ 
++Ported from ``symfluence/data/base_registry.py`` at
++ df9b6447080b85ec6566dc7ad4ed901a623ad0bc. The lookup/constructor methods keep
++ the upstream algorithm. The deliberate boundary adaptation replaces class-level
++ global ``R`` access with an injected instance and a read-only mapping adapter for
++ Floodcast's versioned ``ComponentRegistry``. There is no second registry state.
+ """
+-BaseRegistry - Standardized registry pattern for SYMFLUENCE.
+ 
+-This module provides a consistent lookup facade used across:
+-- AcquisitionRegistry: Data acquisition handlers
+-- DatasetRegistry: Dataset preprocessing handlers
+-- ObservationRegistry: Observation data handlers
+-
+-All registries use lowercase keys internally for consistency.
+-
+-Registration goes through the unified registry facade
+-(``R.<registry>.add()``); subclasses set ``_r_registry_name`` to the
+-corresponding attribute name on ``R`` (e.g. ``"acquisition_handlers"``)
+-and all state lives there.
+-"""
+ from __future__ import annotations
+ 
+-import logging
+-from abc import ABC, abstractmethod
+-from typing import Any, Dict, Generic, List, Optional, Type, TypeVar
++from collections.abc import Mapping
++from typing import TYPE_CHECKING
+ 
+-T = TypeVar('T')
++from floodcast.core.registry import ComponentManifest
++
++from . import DATA_REVISION, DATA_VERSION
++
++if TYPE_CHECKING:
++    from floodcast.core.registries import Registries
++    from floodcast.core.registry import ComponentRegistry
+ 
+ 
+-class BaseRegistry(ABC, Generic[T]):
+-    """
+-    Abstract base class for handler registry lookup facades.
++class _HandlerClasses(Mapping):
++    """Expose upstream's class-lookup contract without constructing handlers."""
+ 
+-    Provides consistent API for:
+-    - Retrieving handler instances
+-    - Listing available handlers
+-    - Checking handler availability
++    def __init__(self, registry: ComponentRegistry) -> None:
++        self.registry = registry
+ 
+-    All keys are normalized to lowercase internally.
++    def __iter__(self):
++        return iter(item.component_id for item in self.registry.manifests())
+ 
+-    Subclasses must set ``_r_registry_name`` to the corresponding attribute
+-    name on ``R`` (e.g. ``"acquisition_handlers"``); all state is delegated
+-    to that unified registry.
+-    """
++    def __len__(self):
++        return len(self.registry.manifests())
+ 
+-    # Subclasses set this to the R.* attribute name they delegate to.
+-    _r_registry_name: Optional[str] = None
++    def __getitem__(self, key):
++        if key not in tuple(iter(self)):
++            raise KeyError(key)
++        return self.registry.resolve(key).factory()
+ 
+-    @classmethod
+-    def _get_r_registry(cls):
+-        """Return the unified ``R.<name>`` Registry instance."""
+-        if cls._r_registry_name is None:
+-            raise TypeError(
+-                f"{cls.__name__} must set _r_registry_name to the R.* "
+-                "registry attribute it delegates to"
+-            )
+-        from symfluence.core.registries import R
+-        return getattr(R, cls._r_registry_name)
+ 
+-    @classmethod
+-    def _normalize_key(cls, key: str) -> str:
+-        """Normalize registry key to lowercase."""
++class BaseRegistry:
++    """Lookup facade whose complete state remains in the application's ``R``."""
++
++    registry_name = ""
++
++    def __init__(self, registries: Registries) -> None:
++        self.R = registries
++
++    @property
++    def registry(self):
++        return getattr(self.R, self.registry_name)
++
++    def _get_r_registry(self):
++        if not self.registry_name:
++            raise TypeError(f"{type(self).__name__} must set registry_name")
++        return _HandlerClasses(self.registry)
++
++    @staticmethod
++    def _normalize_key(key: str) -> str:
++        """Normalize registry key to lowercase (upstream contract)."""
+         return key.lower()
+ 
+-    @classmethod
+-    @abstractmethod
+-    def get_handler(cls, name: str, *args, **kwargs) -> T:
+-        """
+-        Get an instance of the appropriate handler.
+-
+-        Args:
+-            name: Handler name
+-            *args: Positional arguments for handler constructor
+-            **kwargs: Keyword arguments for handler constructor
+-
+-        Returns:
+-            Handler instance
+-
+-        Raises:
+-            ValueError: If handler not found
+-        """
+-        pass
+-
+-    @classmethod
+-    def _get_handler_class(cls, name: str) -> Type[T]:
+-        """
+-        Get the handler class for a given name.
+-
+-        Args:
+-            name: Handler name
+-
+-        Returns:
+-            Handler class
+-
+-        Raises:
+-            ValueError: If handler not found
+-        """
+-        normalized_name = cls._normalize_key(name)
+-        r_reg = cls._get_r_registry()
+-
++    def _get_handler_class(self, name: str):
++        normalized_name = self._normalize_key(name)
++        r_reg = self._get_r_registry()
+         handler = r_reg.get(normalized_name)
+         if handler is None:
+-            available = ', '.join(sorted(r_reg.keys()))
+-            raise ValueError(
+-                f"Unknown handler: '{name}'. Available: {available}"
+-            )
++            available = ", ".join(sorted(r_reg.keys()))
++            raise ValueError(f"Unknown handler: '{name}'. Available: {available}")
+         return handler
+ 
+-    @classmethod
+-    def list_handlers(cls) -> List[str]:
+-        """
+-        List all registered handler names.
++    def get_handler(self, name, config, logger, **kwargs):
++        handler_class = self._get_handler_class(name)
++        return handler_class(config, logger, **kwargs)
+ 
+-        Returns:
+-            Sorted list of handler names
+-        """
+-        return sorted(cls._get_r_registry().keys())
++    def list_handlers(self):
++        return tuple(sorted(self._get_r_registry().keys()))
+ 
+-    @classmethod
+-    def is_registered(cls, name: str) -> bool:
+-        """
+-        Check if a handler is registered.
++    def list_datasets(self):
++        return self.list_handlers()
+ 
+-        Args:
+-            name: Handler name to check
+-
+-        Returns:
+-            True if registered, False otherwise
+-        """
+-        return cls._normalize_key(name) in cls._get_r_registry()
+-
+-    @classmethod
+-    def clear(cls) -> None:
+-        """Clear all registered handlers (mainly for testing)."""
+-        cls._get_r_registry().clear()
++    def is_registered(self, name):
++        return self._normalize_key(name) in self._get_r_registry()
+ 
+ 
+-class HandlerRegistry(BaseRegistry[T]):
+-    """
+-    Concrete registry implementation with standard get_handler.
+-
+-    Use this for simple registries where handlers have a consistent
+-    constructor signature.
+-    """
+-
+-    @classmethod
+-    def get_handler(
+-        cls,
+-        name: str,
+-        config: Dict[str, Any],
+-        logger: logging.Logger,
+-        **kwargs
+-    ) -> T:
+-        """
+-        Get an instance of the appropriate handler.
+-
+-        Args:
+-            name: Handler name
+-            config: Configuration dictionary
+-            logger: Logger instance
+-            **kwargs: Additional arguments for handler constructor
+-
+-        Returns:
+-            Handler instance
+-        """
+-        handler_class = cls._get_handler_class(name)
+-        # Cast to Any to allow calling constructor with standard args
+-        # as Mypy doesn't know the exact signature of the registered Type[T]
+-        from typing import cast
+-        return cast(Any, handler_class)(config, logger, **kwargs)
++def register_class(registry, name, handler_class):
++    if not isinstance(handler_class, type):
++        raise TypeError("Data component factories must supply a handler class")
++    registry.register(
++        ComponentManifest(
++            component_id=name.lower(),
++            contract_id=registry.contract_id,
++            implementation_version=DATA_VERSION,
++            source_revision=DATA_REVISION,
++        ),
++        lambda cls=handler_class: cls,
++    )

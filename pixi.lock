@@ -1175,6 +1175,21 @@ packages:
   requires_dist:
   - filelock==3.32.7
   - pydantic==2.14.2
+  - numpy>=2,<3 ; extra == 'forecast'
+  - pandas>=2.2,<3 ; extra == 'forecast'
+  - scipy>=1.14,<2 ; extra == 'forecast'
+  - xarray>=2025.1,<2027 ; extra == 'forecast'
+  - netcdf4>=1.7,<2 ; extra == 'forecast'
+  - h5netcdf>=1.4,<2 ; extra == 'forecast'
+  - h5py>=3.11,<4 ; extra == 'forecast'
+  - eccodes>=2.40,<3 ; extra == 'forecast'
+  - ecmwf-opendata>=0.3.35,<0.4 ; extra == 'forecast'
+  - cdsapi>=0.7.7,<0.8 ; extra == 'forecast'
+  - geopandas>=1,<2 ; extra == 'forecast'
+  - shapely>=2,<3 ; extra == 'forecast'
+  - pyproj>=3.6,<4 ; extra == 'forecast'
+  - easymore==2.0.0 ; extra == 'forecast'
+  - tqdm>=4.66,<5 ; extra == 'forecast'
   requires_python: '>=3.12,<3.15'
 - pypi: https://files.pythonhosted.org/packages/08/93/2a6556bbdb8e918175af9d849a5d0b367b5644e41939d040f3a7215b1339/pydantic_core-2.50.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
   name: pydantic-core

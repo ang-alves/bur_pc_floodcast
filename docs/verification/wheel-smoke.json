@@ -1,0 +1,25 @@
+{
+  "status": "passed",
+  "installed_wheel_runtime": true,
+  "runtime_origin": "floodcast/__init__.py",
+  "provider_plans": {
+    "ifs_medium_range": {
+      "product": "ifs_medium_range",
+      "parts": 16
+    },
+    "s2s_ecds": {
+      "product": "s2s_ecds",
+      "parts": 14
+    },
+    "seasonal_ecmwf": {
+      "product": "seasonal_ecmwf",
+      "parts": 7
+    },
+    "ifs_to_summa": {
+      "product": "ifs_medium_range",
+      "parts": 16
+    }
+  },
+  "scientific_facades_imported": true,
+  "network_used": false
+}

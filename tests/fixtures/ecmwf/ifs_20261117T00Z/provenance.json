@@ -1,0 +1,2400 @@
+{
+  "schema": "floodcast.recorded-ecmwf-fixture/v1",
+  "provider": "ECMWF",
+  "licence": "CC-BY-4.0",
+  "licence_url": "https://creativecommons.org/licenses/by/4.0/",
+  "source_url": "https://www.ecmwf.int/en/forecasts/datasets/open-data",
+  "attribution": "Contains modified Copernicus/ECMWF Open Data: IFS forecasts initialized 2026-11-17T00:00:00Z. Source ECMWF. Spatial subset repacked for offline software tests.",
+  "origin": "Actual publicly retrieved forecast; not generated meteorological values.",
+  "transformation": "Spatial subset to latitude [39,40.5], longitude [-9.5,-7.5]; repacked as IEEE64 without changing decoded selected values. Longitude representation normalized modulo 360; other forecast metadata retained.",
+  "forecast": {
+    "bbox": {
+      "east": -7.5,
+      "north": 40.5,
+      "south": 39.0,
+      "west": -9.5
+    },
+    "cycle": "2026-11-17T00:00:00Z",
+    "distribution_profile": null,
+    "expected_ifs_cycle": "50r1",
+    "fields": {
+      "10u": [
+        0,
+        3,
+        6
+      ],
+      "10v": [
+        0,
+        3,
+        6
+      ],
+      "2d": [
+        0,
+        3,
+        6
+      ],
+      "2t": [
+        0,
+        3,
+        6
+      ],
+      "sp": [
+        0,
+        3,
+        6
+      ],
+      "ssrd": [
+        3,
+        6
+      ],
+      "strd": [
+        3,
+        6
+      ],
+      "tp": [
+        3,
+        6
+      ]
+    },
+    "leads_per_request": 8,
+    "max_grid_points": 8000000,
+    "max_messages": 10000,
+    "max_working_bytes": 1073741824,
+    "members": [
+      0,
+      1
+    ],
+    "originating_centre": "ecmwf",
+    "product": "ifs_medium_range",
+    "resolution": "0p25",
+    "source": "ecmwf",
+    "system": null
+  },
+  "profile_provenance": {
+    "access": {
+      "availability_verified": false,
+      "client": "ecmwf-opendata",
+      "control_selection": {
+        "stream": "oper",
+        "type": "fc"
+      },
+      "dataset": null,
+      "delivery_grid": "0p25",
+      "distribution_profile": "open-data-2026-10-20",
+      "endpoint": null,
+      "notes": [
+        "These are distributed regular-grid products, not the native ~9 km model mesh.",
+        "Rolling-archive availability must be checked separately."
+      ],
+      "origin_field": "model",
+      "origin_value": "ifs",
+      "perturbed_selection": {
+        "stream": "enfo",
+        "type": "pf"
+      },
+      "product": "ifs_medium_range",
+      "seasonal_system": null
+    },
+    "model": {
+      "cycle_evidence": "documented_operational_timeline",
+      "hres_control_scientifically_identical": true,
+      "ifs_cycle": "50r1",
+      "policy_version": "ecmwf-source-reuse-review-2026-11-17",
+      "product": "ifs_medium_range",
+      "reference_time": "2026-11-17T00:00:00+00:00",
+      "seasonal_system": null,
+      "separate_hres_production": false
+    },
+    "policy_version": "ecmwf-source-reuse-review-2026-11-17",
+    "reviewed_through": "2026-11-17T23:59:59+00:00",
+    "source_code_commit": "df9b6447080b85ec6566dc7ad4ed901a623ad0bc"
+  },
+  "source_request_sha256": "c625bfcd4bb036ec2cf35510075fdf2f138e348686f695f2724c66dcf9756929",
+  "original_download_bytes": 20102931,
+  "created_at": "2026-11-17T19:28:31.351963+00:00",
+  "assets": [
+    {
+      "part_id": "part-00000",
+      "file": "part-00000.grib",
+      "sha256": "83dd17632eb87839c9fafffddf8205a08525e72158ac8cd683900044653d68c6",
+      "size": 2073,
+      "source_sha256": "133c58e9887a7657591fd5ce7619bfb428aad33f46ebc9dd21f04f0bde8e9bb8",
+      "source_size": 2215400,
+      "messages": [
+        {
+          "paramId": 165,
+          "shortName": "10u",
+          "units": "m s**-1",
+          "dataType": "fc",
+          "stream": "oper",
+          "startStep": 0,
+          "endStep": 0,
+          "generatingProcessIdentifier": 161,
+          "tablesVersion": 32,
+          "edition": 2,
+          "number": 0,
+          "source_values_sha256": "9a511bf68534edef17b4b0694986f3bb6c5c8293d7eeaad5667d2edc98ffc1b8",
+          "shape": [
+            7,
+            9
+          ]
+        },
+        {
+          "paramId": 165,
+          "shortName": "10u",
+          "units": "m s**-1",
+          "dataType": "fc",
+          "stream": "oper",
+          "startStep": 3,
+          "endStep": 3,
+          "generatingProcessIdentifier": 161,
+          "tablesVersion": 32,
+          "edition": 2,
+          "number": 0,
+          "source_values_sha256": "2ac40e074d8bf6958cfda0851a11ddc2a6ecc4c4ea38b3f11b91f65842e52b9d",
+          "shape": [
+            7,
+            9
+          ]
+        },
+        {
+          "paramId": 165,
+          "shortName": "10u",
+          "units": "m s**-1",
+          "dataType": "fc",
+          "stream": "oper",
+          "startStep": 6,
+          "endStep": 6,
+          "generatingProcessIdentifier": 161,
+          "tablesVersion": 32,
+          "edition": 2,
+          "number": 0,
+          "source_values_sha256": "a7b2f8764f72511b04d0a773b137b9a27e19bc09880ca97e45e980b810312640",
+          "shape": [
+            7,
+            9
+          ]
+        }
+      ]
+    },
+    {
+      "part_id": "part-00001",
+      "file": "part-00001.grib",
+      "sha256": "1126aa4b2fc9fc5a9d3a1e423d368dc7eb794d0f3a1c5b9e345d3a2cb54c218e",
+      "size": 2073,
+      "source_sha256": "64174f2838ce0d46b147958b6d8bc1531044f15fe003c512743da2bd07a12cf4",
+      "source_size": 2063809,
+      "messages": [
+        {
+          "paramId": 166,
+          "shortName": "10v",
+          "units": "m s**-1",
+          "dataType": "fc",
+          "stream": "oper",
+          "startStep": 0,
+          "endStep": 0,
+          "generatingProcessIdentifier": 161,
+          "tablesVersion": 32,
+          "edition": 2,
+          "number": 0,
+          "source_values_sha256": "37ee83db2e0dbdb3fc1b259e7757f1c2694c853dfd08e0d92e8fee601a7312dc",
+          "shape": [
+            7,
+            9
+          ]
+        },
+        {
+          "paramId": 166,
+          "shortName": "10v",
+          "units": "m s**-1",
+          "dataType": "fc",
+          "stream": "oper",
+          "startStep": 3,
+          "endStep": 3,
+          "generatingProcessIdentifier": 161,
+          "tablesVersion": 32,
+          "edition": 2,
+          "number": 0,
+          "source_values_sha256": "25f88bdeec564dac80921a539d372dd703f4ad284fa0d776fb14ef67fe339a14",
+          "shape": [
+            7,
+            9
+          ]
+        },
+        {
+          "paramId": 166,
+          "shortName": "10v",
+          "units": "m s**-1",
+          "dataType": "fc",
+          "stream": "oper",
+          "startStep": 6,
+          "endStep": 6,
+          "generatingProcessIdentifier": 161,
+          "tablesVersion": 32,
+          "edition": 2,
+          "number": 0,
+          "source_values_sha256": "db640f573ce211eb52ba8e7f473bd24cea2c683574f24b51d630bf70f3eb4b06",
+          "shape": [
+            7,
+            9
+          ]
+        }
+      ]
+    },
+    {
+      "part_id": "part-00002",
+      "file": "part-00002.grib",
+      "sha256": "41334ac543f7ce0e835c26956ea41efdbc838aa8c64140c28b29ac8b04bdc7e5",
+      "size": 2073,
+      "source_sha256": "e70365de67f9581877f24f8a6e9cbfe86b51996f342c7caed2b8f6348504bea3",
+      "source_size": 990860,
+      "messages": [
+        {
+          "paramId": 168,
+          "shortName": "2d",
+          "units": "K",
+          "dataType": "fc",
+          "stream": "oper",
+          "startStep": 0,
+          "endStep": 0,
+          "generatingProcessIdentifier": 161,
+          "tablesVersion": 32,
+          "edition": 2,
+          "number": 0,
+          "source_values_sha256": "4cf962fee448036249f153aa20ab7151e47eb0f1eacbe11c20e37d0356c9d91d",
+          "shape": [
+            7,
+            9
+          ]
+        },
+        {
+          "paramId": 168,
+          "shortName": "2d",
+          "units": "K",
+          "dataType": "fc",
+          "stream": "oper",
+          "startStep": 3,
+          "endStep": 3,
+          "generatingProcessIdentifier": 161,
+          "tablesVersion": 32,
+          "edition": 2,
+          "number": 0,
+          "source_values_sha256": "19b1d6985059e256b5de1acf92bb0def3685fd0e1be5d8aff7884e33b0627e60",
+          "shape": [
+            7,
+            9
+          ]
+        },
+        {
+          "paramId": 168,
+          "shortName": "2d",
+          "units": "K",
+          "dataType": "fc",
+          "stream": "oper",
+          "startStep": 6,
+          "endStep": 6,
+          "generatingProcessIdentifier": 161,
+          "tablesVersion": 32,
+          "edition": 2,
+          "number": 0,
+          "source_values_sha256": "ef4438d77d92b5f90fffa0000453f24058fe6c82a16e8fcd59d969fa30919f99",
+          "shape": [
+            7,
+            9
+          ]
+        }
+      ]
+    },
+    {
+      "part_id": "part-00003",
+      "file": "part-00003.grib",
+      "sha256": "27ec5fb61ba8947ef443c9ae06919d6090f0450e4639e9813099bf487c805a03",
+      "size": 2073,
+      "source_sha256": "7f5dce5eeb2d1e0f0b3a224902263050650ce52c324d792e434b1d49d4617339",
+      "source_size": 934112,
+      "messages": [
+        {
+          "paramId": 167,
+          "shortName": "2t",
+          "units": "K",
+          "dataType": "fc",
+          "stream": "oper",
+          "startStep": 0,
+          "endStep": 0,
+          "generatingProcessIdentifier": 161,
+          "tablesVersion": 32,
+          "edition": 2,
+          "number": 0,
+          "source_values_sha256": "aa03cde16131bf3b36acc7be085f157ef5788982b31c37e850cbe74a8479e10e",
+          "shape": [
+            7,
+            9
+          ]
+        },
+        {
+          "paramId": 167,
+          "shortName": "2t",
+          "units": "K",
+          "dataType": "fc",
+          "stream": "oper",
+          "startStep": 3,
+          "endStep": 3,
+          "generatingProcessIdentifier": 161,
+          "tablesVersion": 32,
+          "edition": 2,
+          "number": 0,
+          "source_values_sha256": "cbd3fdf6f774db70fe51973371b8dac651e9e1346710bf0e054a54777951eef2",
+          "shape": [
+            7,
+            9
+          ]
+        },
+        {
+          "paramId": 167,
+          "shortName": "2t",
+          "units": "K",
+          "dataType": "fc",
+          "stream": "oper",
+          "startStep": 6,
+          "endStep": 6,
+          "generatingProcessIdentifier": 161,
+          "tablesVersion": 32,
+          "edition": 2,
+          "number": 0,
+          "source_values_sha256": "ec3f9608b49d1723c7b4218ccac76640d513bc698a71c0fdebb3d445ea55b054",
+          "shape": [
+            7,
+            9
+          ]
+        }
+      ]
+    },
+    {
+      "part_id": "part-00004",
+      "file": "part-00004.grib",
+      "sha256": "ae02853fbc08da4d286e896db80f6dbd3cc917b2979207a6ddb6e0ca00728100",
+      "size": 2073,
+      "source_sha256": "c78721b2269a8796d680c39cfbb2646ace95819943dc4355ec744519e148011b",
+      "source_size": 1620262,
+      "messages": [
+        {
+          "paramId": 134,
+          "shortName": "sp",
+          "units": "Pa",
+          "dataType": "fc",
+          "stream": "oper",
+          "startStep": 0,
+          "endStep": 0,
+          "generatingProcessIdentifier": 161,
+          "tablesVersion": 32,
+          "edition": 2,
+          "number": 0,
+          "source_values_sha256": "27cfb3834d3f0bf4164e9015e41da349926ed8e5a04d896d0ed25186242787f8",
+          "shape": [
+            7,
+            9
+          ]
+        },
+        {
+          "paramId": 134,
+          "shortName": "sp",
+          "units": "Pa",
+          "dataType": "fc",
+          "stream": "oper",
+          "startStep": 3,
+          "endStep": 3,
+          "generatingProcessIdentifier": 161,
+          "tablesVersion": 32,
+          "edition": 2,
+          "number": 0,
+          "source_values_sha256": "4d3c82697e8c7c213d333f834347f5d21e17743a2fe394ee71e70699f5101bd6",
+          "shape": [
+            7,
+            9
+          ]
+        },
+        {
+          "paramId": 134,
+          "shortName": "sp",
+          "units": "Pa",
+          "dataType": "fc",
+          "stream": "oper",
+          "startStep": 6,
+          "endStep": 6,
+          "generatingProcessIdentifier": 161,
+          "tablesVersion": 32,
+          "edition": 2,
+          "number": 0,
+          "source_values_sha256": "645346fb5dea5c256945ee3ef24c7305c1bdc988f408505971ac346d18d3d07d",
+          "shape": [
+            7,
+            9
+          ]
+        }
+      ]
+    },
+    {
+      "part_id": "part-00005",
+      "file": "part-00005.grib",
+      "sha256": "a29133a843d5432065841462f47a16d5e04ac14e38776fa046e3643b07b78597",
+      "size": 1430,
+      "source_sha256": "75c7ab3a9fe1fc08fe46a0b7662bc11de6aaba0464891e28b01904f1796aa384",
+      "source_size": 657091,
+      "messages": [
+        {
+          "paramId": 169,
+          "shortName": "ssrd",
+          "units": "J m**-2",
+          "dataType": "fc",
+          "stream": "oper",
+          "startStep": 0,
+          "endStep": 3,
+          "generatingProcessIdentifier": 161,
+          "tablesVersion": 32,
+          "edition": 2,
+          "number": 0,
+          "source_values_sha256": "696bda342649ec9268da57b6a279df6f24b0e857d5e6d0605fd25af95adc3cee",
+          "shape": [
+            7,
+            9
+          ]
+        },
+        {
+          "paramId": 169,
+          "shortName": "ssrd",
+          "units": "J m**-2",
+          "dataType": "fc",
+          "stream": "oper",
+          "startStep": 0,
+          "endStep": 6,
+          "generatingProcessIdentifier": 161,
+          "tablesVersion": 32,
+          "edition": 2,
+          "number": 0,
+          "source_values_sha256": "696bda342649ec9268da57b6a279df6f24b0e857d5e6d0605fd25af95adc3cee",
+          "shape": [
+            7,
+            9
+          ]
+        }
+      ]
+    },
+    {
+      "part_id": "part-00006",
+      "file": "part-00006.grib",
+      "sha256": "7b17c52afbcb765dab494c18368e8ae3386857e407a0ad114c6b2d16ae8e1a46",
+      "size": 1430,
+      "source_sha256": "8c2b79a0b0633a522bdff2fc42effef9ef5c3e34f1e42ea1c3d617c49a620b74",
+      "source_size": 1242603,
+      "messages": [
+        {
+          "paramId": 175,
+          "shortName": "strd",
+          "units": "J m**-2",
+          "dataType": "fc",
+          "stream": "oper",
+          "startStep": 0,
+          "endStep": 3,
+          "generatingProcessIdentifier": 161,
+          "tablesVersion": 32,
+          "edition": 2,
+          "number": 0,
+          "source_values_sha256": "0e5681090bf13a6a6e28d2500e212f36daa1329018a12fb81f850fa9c1726b19",
+          "shape": [
+            7,
+            9
+          ]
+        },
+        {
+          "paramId": 175,
+          "shortName": "strd",
+          "units": "J m**-2",
+          "dataType": "fc",
+          "stream": "oper",
+          "startStep": 0,
+          "endStep": 6,
+          "generatingProcessIdentifier": 161,
+          "tablesVersion": 32,
+          "edition": 2,
+          "number": 0,
+          "source_values_sha256": "caf9ce461aa92716942ff080e0ef342c1a7b8092a76e28df56ec0b80fd0bbbe3",
+          "shape": [
+            7,
+            9
+          ]
+        }
+      ]
+    },
+    {
+      "part_id": "part-00007",
+      "file": "part-00007.grib",
+      "sha256": "b76759740e907263805f120a4db3ed9869280e5a02bcf6cb35765e2eb31c6400",
+      "size": 1430,
+      "source_sha256": "7834155f49ec32f611df73c3dbea72c47d9a8d8982ce313913ab6ea97f001b1c",
+      "source_size": 569784,
+      "messages": [
+        {
+          "paramId": 228,
+          "shortName": "tp",
+          "units": "m",
+          "dataType": "fc",
+          "stream": "oper",
+          "startStep": 0,
+          "endStep": 3,
+          "generatingProcessIdentifier": 161,
+          "tablesVersion": 32,
+          "edition": 2,
+          "number": 0,
+          "source_values_sha256": "8f1906f383a5d2aacd80c121cc2d5a6b2fe52b72e9acd4010f5b8dc4d4d6f1fe",
+          "shape": [
+            7,
+            9
+          ]
+        },
+        {
+          "paramId": 228,
+          "shortName": "tp",
+          "units": "m",
+          "dataType": "fc",
+          "stream": "oper",
+          "startStep": 0,
+          "endStep": 6,
+          "generatingProcessIdentifier": 161,
+          "tablesVersion": 32,
+          "edition": 2,
+          "number": 0,
+          "source_values_sha256": "5951b822e6d3edce29f49c6cec7af4e373d83b39b70c56843dddcf37de485fad",
+          "shape": [
+            7,
+            9
+          ]
+        }
+      ]
+    },
+    {
+      "part_id": "part-00008",
+      "file": "part-00008.grib",
+      "sha256": "738f8e8dfc41fff68a13f7facbd2aa45e58ad5feeeb41a6dd1cf90412971dae6",
+      "size": 2082,
+      "source_sha256": "a0d89a01072e93342d2a5391be655cd6fa8a59b1d7a9481133c55770f8f21654",
+      "source_size": 1891756,
+      "messages": [
+        {
+          "paramId": 165,
+          "shortName": "10u",
+          "units": "m s**-1",
+          "dataType": "pf",
+          "stream": "enfo",
+          "startStep": 0,
+          "endStep": 0,
+          "generatingProcessIdentifier": 161,
+          "tablesVersion": 32,
+          "edition": 2,
+          "number": 1,
+          "source_values_sha256": "ec7cd70837f2012326eb668e77a2c7bcadac48f2fa43aa0b7a6258cef2cc8b58",
+          "shape": [
+            7,
+            9
+          ]
+        },
+        {
+          "paramId": 165,
+          "shortName": "10u",
+          "units": "m s**-1",
+          "dataType": "pf",
+          "stream": "enfo",
+          "startStep": 3,
+          "endStep": 3,
+          "generatingProcessIdentifier": 161,
+          "tablesVersion": 32,
+          "edition": 2,
+          "number": 1,
+          "source_values_sha256": "2e48ee63ec1d1914b9ef707e3c9368f138fd40d83509318088484772cbdfa0d1",
+          "shape": [
+            7,
+            9
+          ]
+        },
+        {
+          "paramId": 165,
+          "shortName": "10u",
+          "units": "m s**-1",
+          "dataType": "pf",
+          "stream": "enfo",
+          "startStep": 6,
+          "endStep": 6,
+          "generatingProcessIdentifier": 161,
+          "tablesVersion": 32,
+          "edition": 2,
+          "number": 1,
+          "source_values_sha256": "fdac0022bdd0f62aed92a02929df2cea2a36daee129d3b58e7a947da930b6a8f",
+          "shape": [
+            7,
+            9
+          ]
+        }
+      ]
+    },
+    {
+      "part_id": "part-00009",
+      "file": "part-00009.grib",
+      "sha256": "72e5215df09d3c6cbff5b90bb6a0e58f34308095da536cdce11adfd9a97f1d13",
+      "size": 2082,
+      "source_sha256": "8f8c487d1c203b0b6fd5aab3c204cf50a5c8b27af0e35ab0e81f7a652c6fd8f8",
+      "source_size": 1860943,
+      "messages": [
+        {
+          "paramId": 166,
+          "shortName": "10v",
+          "units": "m s**-1",
+          "dataType": "pf",
+          "stream": "enfo",
+          "startStep": 0,
+          "endStep": 0,
+          "generatingProcessIdentifier": 161,
+          "tablesVersion": 32,
+          "edition": 2,
+          "number": 1,
+          "source_values_sha256": "e3e952f6116b1b818994f63e3073fc66eecc72af328dd5534e9213e46b5ae037",
+          "shape": [
+            7,
+            9
+          ]
+        },
+        {
+          "paramId": 166,
+          "shortName": "10v",
+          "units": "m s**-1",
+          "dataType": "pf",
+          "stream": "enfo",
+          "startStep": 3,
+          "endStep": 3,
+          "generatingProcessIdentifier": 161,
+          "tablesVersion": 32,
+          "edition": 2,
+          "number": 1,
+          "source_values_sha256": "96a95f88f333013202e7f5b2143029917b9d0847dc56482a3fd0a3f891d46043",
+          "shape": [
+            7,
+            9
+          ]
+        },
+        {
+          "paramId": 166,
+          "shortName": "10v",
+          "units": "m s**-1",
+          "dataType": "pf",
+          "stream": "enfo",
+          "startStep": 6,
+          "endStep": 6,
+          "generatingProcessIdentifier": 161,
+          "tablesVersion": 32,
+          "edition": 2,
+          "number": 1,
+          "source_values_sha256": "34fe5e8a90095cb43edc6766ba6ec6c1167c45adcad14435ac9331771b1816c6",
+          "shape": [
+            7,
+            9
+          ]
+        }
+      ]
+    },
+    {
+      "part_id": "part-00010",
+      "file": "part-00010.grib",
+      "sha256": "0cb35ffff921bfd41f3b8eef0885b71dfa009a0a19bce5a7d05a5b7db0562900",
+      "size": 2082,
+      "source_sha256": "7230037f97b5c0b5b3275da4601a4b11edad41ef1d23e207498099725df00fbf",
+      "source_size": 1013058,
+      "messages": [
+        {
+          "paramId": 168,
+          "shortName": "2d",
+          "units": "K",
+          "dataType": "pf",
+          "stream": "enfo",
+          "startStep": 0,
+          "endStep": 0,
+          "generatingProcessIdentifier": 161,
+          "tablesVersion": 32,
+          "edition": 2,
+          "number": 1,
+          "source_values_sha256": "15baf7e2ed84ef1e412d0632d68e53b39d38b23ed17671b382c7beac3919fd32",
+          "shape": [
+            7,
+            9
+          ]
+        },
+        {
+          "paramId": 168,
+          "shortName": "2d",
+          "units": "K",
+          "dataType": "pf",
+          "stream": "enfo",
+          "startStep": 3,
+          "endStep": 3,
+          "generatingProcessIdentifier": 161,
+          "tablesVersion": 32,
+          "edition": 2,
+          "number": 1,
+          "source_values_sha256": "6dfd6748f50d77a96fe1913c8091c184d1a34f207f045a58e6493aab51fd6ddd",
+          "shape": [
+            7,
+            9
+          ]
+        },
+        {
+          "paramId": 168,
+          "shortName": "2d",
+          "units": "K",
+          "dataType": "pf",
+          "stream": "enfo",
+          "startStep": 6,
+          "endStep": 6,
+          "generatingProcessIdentifier": 161,
+          "tablesVersion": 32,
+          "edition": 2,
+          "number": 1,
+          "source_values_sha256": "2f9052f7cb86dd61a57f9ff86213d5300dca31a686377e1401485c234f0dce42",
+          "shape": [
+            7,
+            9
+          ]
+        }
+      ]
+    },
+    {
+      "part_id": "part-00011",
+      "file": "part-00011.grib",
+      "sha256": "b9d30c0c427aa137cd2a1babf4f375b3937eefd9252fa24601814b81ad99981d",
+      "size": 2082,
+      "source_sha256": "5bfc9372abbbe0c22babad44a85ce35f40ed46cf9283c494075464b735b66ad2",
+      "source_size": 951214,
+      "messages": [
+        {
+          "paramId": 167,
+          "shortName": "2t",
+          "units": "K",
+          "dataType": "pf",
+          "stream": "enfo",
+          "startStep": 0,
+          "endStep": 0,
+          "generatingProcessIdentifier": 161,
+          "tablesVersion": 32,
+          "edition": 2,
+          "number": 1,
+          "source_values_sha256": "b720f150039aee757e950bc22049ea788731e4e68e888dd26d2f886e8732260f",
+          "shape": [
+            7,
+            9
+          ]
+        },
+        {
+          "paramId": 167,
+          "shortName": "2t",
+          "units": "K",
+          "dataType": "pf",
+          "stream": "enfo",
+          "startStep": 3,
+          "endStep": 3,
+          "generatingProcessIdentifier": 161,
+          "tablesVersion": 32,
+          "edition": 2,
+          "number": 1,
+          "source_values_sha256": "2dbb1d21f84732ea80f41c4b97518e3e34cea63a7b1cb028bf8506524c2c2b54",
+          "shape": [
+            7,
+            9
+          ]
+        },
+        {
+          "paramId": 167,
+          "shortName": "2t",
+          "units": "K",
+          "dataType": "pf",
+          "stream": "enfo",
+          "startStep": 6,
+          "endStep": 6,
+          "generatingProcessIdentifier": 161,
+          "tablesVersion": 32,
+          "edition": 2,
+          "number": 1,
+          "source_values_sha256": "bee9dab572dfa0b6347598b53609fdfb5f762b06508bd9e001e8b91b7d5bd41d",
+          "shape": [
+            7,
+            9
+          ]
+        }
+      ]
+    },
+    {
+      "part_id": "part-00012",
+      "file": "part-00012.grib",
+      "sha256": "9dc61cd588188b5ced2e43894d633a8028d840cbb480b32e44c81ca8eb4bd66c",
+      "size": 2082,
+      "source_sha256": "8532bb45d483866193c4aae490a1720cf75e12a8a177e616f8f1c46ca22abb29",
+      "source_size": 1630387,
+      "messages": [
+        {
+          "paramId": 134,
+          "shortName": "sp",
+          "units": "Pa",
+          "dataType": "pf",
+          "stream": "enfo",
+          "startStep": 0,
+          "endStep": 0,
+          "generatingProcessIdentifier": 161,
+          "tablesVersion": 32,
+          "edition": 2,
+          "number": 1,
+          "source_values_sha256": "363079579817eca482f74602e31952c0a1888641f28314b1795019a7de8bc656",
+          "shape": [
+            7,
+            9
+          ]
+        },
+        {
+          "paramId": 134,
+          "shortName": "sp",
+          "units": "Pa",
+          "dataType": "pf",
+          "stream": "enfo",
+          "startStep": 3,
+          "endStep": 3,
+          "generatingProcessIdentifier": 161,
+          "tablesVersion": 32,
+          "edition": 2,
+          "number": 1,
+          "source_values_sha256": "330a04aca134beab2959edbf6f486fadede17a743612e460534b8d5a18a2cfcc",
+          "shape": [
+            7,
+            9
+          ]
+        },
+        {
+          "paramId": 134,
+          "shortName": "sp",
+          "units": "Pa",
+          "dataType": "pf",
+          "stream": "enfo",
+          "startStep": 6,
+          "endStep": 6,
+          "generatingProcessIdentifier": 161,
+          "tablesVersion": 32,
+          "edition": 2,
+          "number": 1,
+          "source_values_sha256": "500c5db4784459b2beea21e4ef919f87abac9b22337b9b9651642940cda748bb",
+          "shape": [
+            7,
+            9
+          ]
+        }
+      ]
+    },
+    {
+      "part_id": "part-00013",
+      "file": "part-00013.grib",
+      "sha256": "0cb0134ccd1a564bb15bb02edf7f0af6dae0e783eda502e7abc625a39cfcd3ba",
+      "size": 1436,
+      "source_sha256": "c1c9136cb00079be70bc8b408db568d2d9f0b4604d2dd4b8ae67f15d2875d587",
+      "source_size": 673555,
+      "messages": [
+        {
+          "paramId": 169,
+          "shortName": "ssrd",
+          "units": "J m**-2",
+          "dataType": "pf",
+          "stream": "enfo",
+          "startStep": 0,
+          "endStep": 3,
+          "generatingProcessIdentifier": 161,
+          "tablesVersion": 32,
+          "edition": 2,
+          "number": 1,
+          "source_values_sha256": "696bda342649ec9268da57b6a279df6f24b0e857d5e6d0605fd25af95adc3cee",
+          "shape": [
+            7,
+            9
+          ]
+        },
+        {
+          "paramId": 169,
+          "shortName": "ssrd",
+          "units": "J m**-2",
+          "dataType": "pf",
+          "stream": "enfo",
+          "startStep": 0,
+          "endStep": 6,
+          "generatingProcessIdentifier": 161,
+          "tablesVersion": 32,
+          "edition": 2,
+          "number": 1,
+          "source_values_sha256": "696bda342649ec9268da57b6a279df6f24b0e857d5e6d0605fd25af95adc3cee",
+          "shape": [
+            7,
+            9
+          ]
+        }
+      ]
+    },
+    {
+      "part_id": "part-00014",
+      "file": "part-00014.grib",
+      "sha256": "bb2562428752be7a5537878d6c02587758693ec8d51c77f7f551f63d5cd45b09",
+      "size": 1436,
+      "source_sha256": "73414d58ca75a1d667a80ebf2754d1a7facef2d201ecc36503afc08d7f4d9a5e",
+      "source_size": 1256441,
+      "messages": [
+        {
+          "paramId": 175,
+          "shortName": "strd",
+          "units": "J m**-2",
+          "dataType": "pf",
+          "stream": "enfo",
+          "startStep": 0,
+          "endStep": 3,
+          "generatingProcessIdentifier": 161,
+          "tablesVersion": 32,
+          "edition": 2,
+          "number": 1,
+          "source_values_sha256": "19c7dd94b7b3caf9ddaa9a9cc9a82f040550c620c68efb91c4142304705ddd74",
+          "shape": [
+            7,
+            9
+          ]
+        },
+        {
+          "paramId": 175,
+          "shortName": "strd",
+          "units": "J m**-2",
+          "dataType": "pf",
+          "stream": "enfo",
+          "startStep": 0,
+          "endStep": 6,
+          "generatingProcessIdentifier": 161,
+          "tablesVersion": 32,
+          "edition": 2,
+          "number": 1,
+          "source_values_sha256": "742e7abd7788c1b681b648c3341708712693d96035b0ccb2018ab1fa5a0fa19d",
+          "shape": [
+            7,
+            9
+          ]
+        }
+      ]
+    },
+    {
+      "part_id": "part-00015",
+      "file": "part-00015.grib",
+      "sha256": "f7efee80df03b1c0f20248244f05a837aed2eba17bfd96a8f00060107c08e485",
+      "size": 1436,
+      "source_sha256": "fee495a6b4bf4a671c75879bdec1f48f71f6174d5e027a53ab38e3907183d578",
+      "source_size": 531656,
+      "messages": [
+        {
+          "paramId": 228,
+          "shortName": "tp",
+          "units": "m",
+          "dataType": "pf",
+          "stream": "enfo",
+          "startStep": 0,
+          "endStep": 3,
+          "generatingProcessIdentifier": 161,
+          "tablesVersion": 32,
+          "edition": 2,
+          "number": 1,
+          "source_values_sha256": "60142988de471961b7474cbbe8c5c1b1ef3c4ab77fb935a4ffdc9d8086b69b72",
+          "shape": [
+            7,
+            9
+          ]
+        },
+        {
+          "paramId": 228,
+          "shortName": "tp",
+          "units": "m",
+          "dataType": "pf",
+          "stream": "enfo",
+          "startStep": 0,
+          "endStep": 6,
+          "generatingProcessIdentifier": 161,
+          "tablesVersion": 32,
+          "edition": 2,
+          "number": 1,
+          "source_values_sha256": "cd5f6f86c03a8dfe6394bdef8ba60c50b9d1e4fec2ef44f035102a04010d69ce",
+          "shape": [
+            7,
+            9
+          ]
+        }
+      ]
+    }
+  ],
+  "parts": [
+    {
+      "dataset": null,
+      "part_id": "part-00000",
+      "payload": {
+        "date": "20261117",
+        "levtype": "sfc",
+        "param": [
+          "10u"
+        ],
+        "step": [
+          0,
+          3,
+          6
+        ],
+        "stream": "oper",
+        "time": 0,
+        "type": "fc"
+      },
+      "role": "control",
+      "schema_version": 1,
+      "transport": "open_data"
+    },
+    {
+      "dataset": null,
+      "part_id": "part-00001",
+      "payload": {
+        "date": "20261117",
+        "levtype": "sfc",
+        "param": [
+          "10v"
+        ],
+        "step": [
+          0,
+          3,
+          6
+        ],
+        "stream": "oper",
+        "time": 0,
+        "type": "fc"
+      },
+      "role": "control",
+      "schema_version": 1,
+      "transport": "open_data"
+    },
+    {
+      "dataset": null,
+      "part_id": "part-00002",
+      "payload": {
+        "date": "20261117",
+        "levtype": "sfc",
+        "param": [
+          "2d"
+        ],
+        "step": [
+          0,
+          3,
+          6
+        ],
+        "stream": "oper",
+        "time": 0,
+        "type": "fc"
+      },
+      "role": "control",
+      "schema_version": 1,
+      "transport": "open_data"
+    },
+    {
+      "dataset": null,
+      "part_id": "part-00003",
+      "payload": {
+        "date": "20261117",
+        "levtype": "sfc",
+        "param": [
+          "2t"
+        ],
+        "step": [
+          0,
+          3,
+          6
+        ],
+        "stream": "oper",
+        "time": 0,
+        "type": "fc"
+      },
+      "role": "control",
+      "schema_version": 1,
+      "transport": "open_data"
+    },
+    {
+      "dataset": null,
+      "part_id": "part-00004",
+      "payload": {
+        "date": "20261117",
+        "levtype": "sfc",
+        "param": [
+          "sp"
+        ],
+        "step": [
+          0,
+          3,
+          6
+        ],
+        "stream": "oper",
+        "time": 0,
+        "type": "fc"
+      },
+      "role": "control",
+      "schema_version": 1,
+      "transport": "open_data"
+    },
+    {
+      "dataset": null,
+      "part_id": "part-00005",
+      "payload": {
+        "date": "20261117",
+        "levtype": "sfc",
+        "param": [
+          "ssrd"
+        ],
+        "step": [
+          3,
+          6
+        ],
+        "stream": "oper",
+        "time": 0,
+        "type": "fc"
+      },
+      "role": "control",
+      "schema_version": 1,
+      "transport": "open_data"
+    },
+    {
+      "dataset": null,
+      "part_id": "part-00006",
+      "payload": {
+        "date": "20261117",
+        "levtype": "sfc",
+        "param": [
+          "strd"
+        ],
+        "step": [
+          3,
+          6
+        ],
+        "stream": "oper",
+        "time": 0,
+        "type": "fc"
+      },
+      "role": "control",
+      "schema_version": 1,
+      "transport": "open_data"
+    },
+    {
+      "dataset": null,
+      "part_id": "part-00007",
+      "payload": {
+        "date": "20261117",
+        "levtype": "sfc",
+        "param": [
+          "tp"
+        ],
+        "step": [
+          3,
+          6
+        ],
+        "stream": "oper",
+        "time": 0,
+        "type": "fc"
+      },
+      "role": "control",
+      "schema_version": 1,
+      "transport": "open_data"
+    },
+    {
+      "dataset": null,
+      "part_id": "part-00008",
+      "payload": {
+        "date": "20261117",
+        "levtype": "sfc",
+        "number": [
+          1
+        ],
+        "param": [
+          "10u"
+        ],
+        "step": [
+          0,
+          3,
+          6
+        ],
+        "stream": "enfo",
+        "time": 0,
+        "type": "pf"
+      },
+      "role": "perturbed",
+      "schema_version": 1,
+      "transport": "open_data"
+    },
+    {
+      "dataset": null,
+      "part_id": "part-00009",
+      "payload": {
+        "date": "20261117",
+        "levtype": "sfc",
+        "number": [
+          1
+        ],
+        "param": [
+          "10v"
+        ],
+        "step": [
+          0,
+          3,
+          6
+        ],
+        "stream": "enfo",
+        "time": 0,
+        "type": "pf"
+      },
+      "role": "perturbed",
+      "schema_version": 1,
+      "transport": "open_data"
+    },
+    {
+      "dataset": null,
+      "part_id": "part-00010",
+      "payload": {
+        "date": "20261117",
+        "levtype": "sfc",
+        "number": [
+          1
+        ],
+        "param": [
+          "2d"
+        ],
+        "step": [
+          0,
+          3,
+          6
+        ],
+        "stream": "enfo",
+        "time": 0,
+        "type": "pf"
+      },
+      "role": "perturbed",
+      "schema_version": 1,
+      "transport": "open_data"
+    },
+    {
+      "dataset": null,
+      "part_id": "part-00011",
+      "payload": {
+        "date": "20261117",
+        "levtype": "sfc",
+        "number": [
+          1
+        ],
+        "param": [
+          "2t"
+        ],
+        "step": [
+          0,
+          3,
+          6
+        ],
+        "stream": "enfo",
+        "time": 0,
+        "type": "pf"
+      },
+      "role": "perturbed",
+      "schema_version": 1,
+      "transport": "open_data"
+    },
+    {
+      "dataset": null,
+      "part_id": "part-00012",
+      "payload": {
+        "date": "20261117",
+        "levtype": "sfc",
+        "number": [
+          1
+        ],
+        "param": [
+          "sp"
+        ],
+        "step": [
+          0,
+          3,
+          6
+        ],
+        "stream": "enfo",
+        "time": 0,
+        "type": "pf"
+      },
+      "role": "perturbed",
+      "schema_version": 1,
+      "transport": "open_data"
+    },
+    {
+      "dataset": null,
+      "part_id": "part-00013",
+      "payload": {
+        "date": "20261117",
+        "levtype": "sfc",
+        "number": [
+          1
+        ],
+        "param": [
+          "ssrd"
+        ],
+        "step": [
+          3,
+          6
+        ],
+        "stream": "enfo",
+        "time": 0,
+        "type": "pf"
+      },
+      "role": "perturbed",
+      "schema_version": 1,
+      "transport": "open_data"
+    },
+    {
+      "dataset": null,
+      "part_id": "part-00014",
+      "payload": {
+        "date": "20261117",
+        "levtype": "sfc",
+        "number": [
+          1
+        ],
+        "param": [
+          "strd"
+        ],
+        "step": [
+          3,
+          6
+        ],
+        "stream": "enfo",
+        "time": 0,
+        "type": "pf"
+      },
+      "role": "perturbed",
+      "schema_version": 1,
+      "transport": "open_data"
+    },
+    {
+      "dataset": null,
+      "part_id": "part-00015",
+      "payload": {
+        "date": "20261117",
+        "levtype": "sfc",
+        "number": [
+          1
+        ],
+        "param": [
+          "tp"
+        ],
+        "step": [
+          3,
+          6
+        ],
+        "stream": "enfo",
+        "time": 0,
+        "type": "pf"
+      },
+      "role": "perturbed",
+      "schema_version": 1,
+      "transport": "open_data"
+    }
+  ],
+  "original_indexes": [
+    {
+      "url": "https://data.ecmwf.int/forecasts/20261117/00z/ifs/0p25/oper/20261117000000-0h-oper-fc.index",
+      "message": {
+        "domain": "g",
+        "date": "20261117",
+        "time": "0000",
+        "expver": "0001",
+        "class": "od",
+        "type": "fc",
+        "stream": "oper",
+        "step": "0",
+        "levtype": "sfc",
+        "param": "2t",
+        "_offset": 896851,
+        "_length": 311385
+      }
+    },
+    {
+      "url": "https://data.ecmwf.int/forecasts/20261117/00z/ifs/0p25/oper/20261117000000-0h-oper-fc.index",
+      "message": {
+        "domain": "g",
+        "date": "20261117",
+        "time": "0000",
+        "expver": "0001",
+        "class": "od",
+        "type": "fc",
+        "stream": "oper",
+        "step": "0",
+        "levtype": "sfc",
+        "param": "sp",
+        "_offset": 1453494,
+        "_length": 538957
+      }
+    },
+    {
+      "url": "https://data.ecmwf.int/forecasts/20261117/00z/ifs/0p25/oper/20261117000000-0h-oper-fc.index",
+      "message": {
+        "domain": "g",
+        "date": "20261117",
+        "time": "0000",
+        "expver": "0001",
+        "class": "od",
+        "type": "fc",
+        "stream": "oper",
+        "step": "0",
+        "levtype": "sfc",
+        "param": "2d",
+        "_offset": 7865149,
+        "_length": 331570
+      }
+    },
+    {
+      "url": "https://data.ecmwf.int/forecasts/20261117/00z/ifs/0p25/oper/20261117000000-0h-oper-fc.index",
+      "message": {
+        "domain": "g",
+        "date": "20261117",
+        "time": "0000",
+        "expver": "0001",
+        "class": "od",
+        "type": "fc",
+        "stream": "oper",
+        "step": "0",
+        "levtype": "sfc",
+        "param": "10u",
+        "_offset": 20327956,
+        "_length": 736875
+      }
+    },
+    {
+      "url": "https://data.ecmwf.int/forecasts/20261117/00z/ifs/0p25/oper/20261117000000-0h-oper-fc.index",
+      "message": {
+        "domain": "g",
+        "date": "20261117",
+        "time": "0000",
+        "expver": "0001",
+        "class": "od",
+        "type": "fc",
+        "stream": "oper",
+        "step": "0",
+        "levtype": "sfc",
+        "param": "10v",
+        "_offset": 22449067,
+        "_length": 728300
+      }
+    },
+    {
+      "url": "https://data.ecmwf.int/forecasts/20261117/00z/ifs/0p25/oper/20261117000000-3h-oper-fc.index",
+      "message": {
+        "domain": "g",
+        "date": "20261117",
+        "time": "0000",
+        "expver": "0001",
+        "class": "od",
+        "type": "fc",
+        "stream": "oper",
+        "step": "3",
+        "levtype": "sfc",
+        "param": "sp",
+        "_offset": 6373973,
+        "_length": 540031
+      }
+    },
+    {
+      "url": "https://data.ecmwf.int/forecasts/20261117/00z/ifs/0p25/oper/20261117000000-3h-oper-fc.index",
+      "message": {
+        "domain": "g",
+        "date": "20261117",
+        "time": "0000",
+        "expver": "0001",
+        "class": "od",
+        "type": "fc",
+        "stream": "oper",
+        "levtype": "sfc",
+        "step": "3",
+        "param": "strd",
+        "_offset": 13300421,
+        "_length": 636125
+      }
+    },
+    {
+      "url": "https://data.ecmwf.int/forecasts/20261117/00z/ifs/0p25/oper/20261117000000-3h-oper-fc.index",
+      "message": {
+        "domain": "g",
+        "date": "20261117",
+        "time": "0000",
+        "expver": "0001",
+        "class": "od",
+        "type": "fc",
+        "stream": "oper",
+        "levtype": "sfc",
+        "step": "3",
+        "param": "tp",
+        "_offset": 15134792,
+        "_length": 252484
+      }
+    },
+    {
+      "url": "https://data.ecmwf.int/forecasts/20261117/00z/ifs/0p25/oper/20261117000000-3h-oper-fc.index",
+      "message": {
+        "domain": "g",
+        "date": "20261117",
+        "time": "0000",
+        "expver": "0001",
+        "class": "od",
+        "type": "fc",
+        "stream": "oper",
+        "step": "3",
+        "levtype": "sfc",
+        "param": "10u",
+        "_offset": 19641284,
+        "_length": 738490
+      }
+    },
+    {
+      "url": "https://data.ecmwf.int/forecasts/20261117/00z/ifs/0p25/oper/20261117000000-3h-oper-fc.index",
+      "message": {
+        "domain": "g",
+        "date": "20261117",
+        "time": "0000",
+        "expver": "0001",
+        "class": "od",
+        "type": "fc",
+        "stream": "oper",
+        "step": "3",
+        "levtype": "sfc",
+        "param": "10v",
+        "_offset": 21084811,
+        "_length": 729968
+      }
+    },
+    {
+      "url": "https://data.ecmwf.int/forecasts/20261117/00z/ifs/0p25/oper/20261117000000-3h-oper-fc.index",
+      "message": {
+        "domain": "g",
+        "date": "20261117",
+        "time": "0000",
+        "expver": "0001",
+        "class": "od",
+        "type": "fc",
+        "stream": "oper",
+        "step": "3",
+        "levtype": "sfc",
+        "param": "2t",
+        "_offset": 22204121,
+        "_length": 310860
+      }
+    },
+    {
+      "url": "https://data.ecmwf.int/forecasts/20261117/00z/ifs/0p25/oper/20261117000000-3h-oper-fc.index",
+      "message": {
+        "domain": "g",
+        "date": "20261117",
+        "time": "0000",
+        "expver": "0001",
+        "class": "od",
+        "type": "fc",
+        "stream": "oper",
+        "step": "3",
+        "levtype": "sfc",
+        "param": "2d",
+        "_offset": 24967836,
+        "_length": 329822
+      }
+    },
+    {
+      "url": "https://data.ecmwf.int/forecasts/20261117/00z/ifs/0p25/oper/20261117000000-3h-oper-fc.index",
+      "message": {
+        "domain": "g",
+        "date": "20261117",
+        "time": "0000",
+        "expver": "0001",
+        "class": "od",
+        "type": "fc",
+        "stream": "oper",
+        "levtype": "sfc",
+        "step": "3",
+        "param": "ssrd",
+        "_offset": 25297658,
+        "_length": 319299
+      }
+    },
+    {
+      "url": "https://data.ecmwf.int/forecasts/20261117/00z/ifs/0p25/oper/20261117000000-6h-oper-fc.index",
+      "message": {
+        "domain": "g",
+        "date": "20261117",
+        "time": "0000",
+        "expver": "0001",
+        "class": "od",
+        "type": "fc",
+        "stream": "oper",
+        "step": "6",
+        "levtype": "sfc",
+        "param": "sp",
+        "_offset": 306990,
+        "_length": 541274
+      }
+    },
+    {
+      "url": "https://data.ecmwf.int/forecasts/20261117/00z/ifs/0p25/oper/20261117000000-6h-oper-fc.index",
+      "message": {
+        "domain": "g",
+        "date": "20261117",
+        "time": "0000",
+        "expver": "0001",
+        "class": "od",
+        "type": "fc",
+        "stream": "oper",
+        "levtype": "sfc",
+        "step": "6",
+        "param": "strd",
+        "_offset": 14966905,
+        "_length": 606478
+      }
+    },
+    {
+      "url": "https://data.ecmwf.int/forecasts/20261117/00z/ifs/0p25/oper/20261117000000-6h-oper-fc.index",
+      "message": {
+        "domain": "g",
+        "date": "20261117",
+        "time": "0000",
+        "expver": "0001",
+        "class": "od",
+        "type": "fc",
+        "stream": "oper",
+        "levtype": "sfc",
+        "step": "6",
+        "param": "tp",
+        "_offset": 15894101,
+        "_length": 317300
+      }
+    },
+    {
+      "url": "https://data.ecmwf.int/forecasts/20261117/00z/ifs/0p25/oper/20261117000000-6h-oper-fc.index",
+      "message": {
+        "domain": "g",
+        "date": "20261117",
+        "time": "0000",
+        "expver": "0001",
+        "class": "od",
+        "type": "fc",
+        "stream": "oper",
+        "step": "6",
+        "levtype": "sfc",
+        "param": "10u",
+        "_offset": 20064419,
+        "_length": 740035
+      }
+    },
+    {
+      "url": "https://data.ecmwf.int/forecasts/20261117/00z/ifs/0p25/oper/20261117000000-6h-oper-fc.index",
+      "message": {
+        "domain": "g",
+        "date": "20261117",
+        "time": "0000",
+        "expver": "0001",
+        "class": "od",
+        "type": "fc",
+        "stream": "oper",
+        "step": "6",
+        "levtype": "sfc",
+        "param": "10v",
+        "_offset": 21818587,
+        "_length": 605541
+      }
+    },
+    {
+      "url": "https://data.ecmwf.int/forecasts/20261117/00z/ifs/0p25/oper/20261117000000-6h-oper-fc.index",
+      "message": {
+        "domain": "g",
+        "date": "20261117",
+        "time": "0000",
+        "expver": "0001",
+        "class": "od",
+        "type": "fc",
+        "stream": "oper",
+        "step": "6",
+        "levtype": "sfc",
+        "param": "2t",
+        "_offset": 23439476,
+        "_length": 311867
+      }
+    },
+    {
+      "url": "https://data.ecmwf.int/forecasts/20261117/00z/ifs/0p25/oper/20261117000000-6h-oper-fc.index",
+      "message": {
+        "domain": "g",
+        "date": "20261117",
+        "time": "0000",
+        "expver": "0001",
+        "class": "od",
+        "type": "fc",
+        "stream": "oper",
+        "step": "6",
+        "levtype": "sfc",
+        "param": "2d",
+        "_offset": 25118286,
+        "_length": 329468
+      }
+    },
+    {
+      "url": "https://data.ecmwf.int/forecasts/20261117/00z/ifs/0p25/oper/20261117000000-6h-oper-fc.index",
+      "message": {
+        "domain": "g",
+        "date": "20261117",
+        "time": "0000",
+        "expver": "0001",
+        "class": "od",
+        "type": "fc",
+        "stream": "oper",
+        "levtype": "sfc",
+        "step": "6",
+        "param": "ssrd",
+        "_offset": 26873666,
+        "_length": 337792
+      }
+    },
+    {
+      "url": "https://data.ecmwf.int/forecasts/20261117/00z/ifs/0p25/enfo/20261117000000-0h-enfo-ef.index",
+      "message": {
+        "domain": "g",
+        "date": "20261117",
+        "time": "0000",
+        "expver": "0001",
+        "class": "od",
+        "type": "pf",
+        "stream": "enfo",
+        "step": "0",
+        "levtype": "sfc",
+        "number": "1",
+        "param": "2d",
+        "_offset": 2324382,
+        "_length": 341048
+      }
+    },
+    {
+      "url": "https://data.ecmwf.int/forecasts/20261117/00z/ifs/0p25/enfo/20261117000000-0h-enfo-ef.index",
+      "message": {
+        "domain": "g",
+        "date": "20261117",
+        "time": "0000",
+        "expver": "0001",
+        "class": "od",
+        "type": "pf",
+        "stream": "enfo",
+        "step": "0",
+        "levtype": "sfc",
+        "number": "1",
+        "param": "10u",
+        "_offset": 253431379,
+        "_length": 631261
+      }
+    },
+    {
+      "url": "https://data.ecmwf.int/forecasts/20261117/00z/ifs/0p25/enfo/20261117000000-0h-enfo-ef.index",
+      "message": {
+        "domain": "g",
+        "date": "20261117",
+        "time": "0000",
+        "expver": "0001",
+        "class": "od",
+        "type": "pf",
+        "stream": "enfo",
+        "step": "0",
+        "levtype": "sfc",
+        "number": "1",
+        "param": "sp",
+        "_offset": 266297598,
+        "_length": 543055
+      }
+    },
+    {
+      "url": "https://data.ecmwf.int/forecasts/20261117/00z/ifs/0p25/enfo/20261117000000-0h-enfo-ef.index",
+      "message": {
+        "domain": "g",
+        "date": "20261117",
+        "time": "0000",
+        "expver": "0001",
+        "class": "od",
+        "type": "pf",
+        "stream": "enfo",
+        "step": "0",
+        "levtype": "sfc",
+        "number": "1",
+        "param": "10v",
+        "_offset": 315053526,
+        "_length": 619842
+      }
+    },
+    {
+      "url": "https://data.ecmwf.int/forecasts/20261117/00z/ifs/0p25/enfo/20261117000000-0h-enfo-ef.index",
+      "message": {
+        "domain": "g",
+        "date": "20261117",
+        "time": "0000",
+        "expver": "0001",
+        "class": "od",
+        "type": "pf",
+        "stream": "enfo",
+        "step": "0",
+        "levtype": "sfc",
+        "number": "1",
+        "param": "2t",
+        "_offset": 339094372,
+        "_length": 321582
+      }
+    },
+    {
+      "url": "https://data.ecmwf.int/forecasts/20261117/00z/ifs/0p25/enfo/20261117000000-3h-enfo-ef.index",
+      "message": {
+        "domain": "g",
+        "date": "20261117",
+        "time": "0000",
+        "expver": "0001",
+        "class": "od",
+        "type": "pf",
+        "stream": "enfo",
+        "step": "3",
+        "levtype": "sfc",
+        "number": "1",
+        "param": "2d",
+        "_offset": 13960170,
+        "_length": 336534
+      }
+    },
+    {
+      "url": "https://data.ecmwf.int/forecasts/20261117/00z/ifs/0p25/enfo/20261117000000-3h-enfo-ef.index",
+      "message": {
+        "domain": "g",
+        "date": "20261117",
+        "time": "0000",
+        "expver": "0001",
+        "class": "od",
+        "type": "pf",
+        "stream": "enfo",
+        "levtype": "sfc",
+        "number": "1",
+        "step": "3",
+        "param": "ssrd",
+        "_offset": 54225737,
+        "_length": 327058
+      }
+    },
+    {
+      "url": "https://data.ecmwf.int/forecasts/20261117/00z/ifs/0p25/enfo/20261117000000-3h-enfo-ef.index",
+      "message": {
+        "domain": "g",
+        "date": "20261117",
+        "time": "0000",
+        "expver": "0001",
+        "class": "od",
+        "type": "pf",
+        "stream": "enfo",
+        "levtype": "sfc",
+        "number": "1",
+        "step": "3",
+        "param": "strd",
+        "_offset": 174627366,
+        "_length": 642925
+      }
+    },
+    {
+      "url": "https://data.ecmwf.int/forecasts/20261117/00z/ifs/0p25/enfo/20261117000000-3h-enfo-ef.index",
+      "message": {
+        "domain": "g",
+        "date": "20261117",
+        "time": "0000",
+        "expver": "0001",
+        "class": "od",
+        "type": "pf",
+        "stream": "enfo",
+        "levtype": "sfc",
+        "number": "1",
+        "step": "3",
+        "param": "tp",
+        "_offset": 256415587,
+        "_length": 272787
+      }
+    },
+    {
+      "url": "https://data.ecmwf.int/forecasts/20261117/00z/ifs/0p25/enfo/20261117000000-3h-enfo-ef.index",
+      "message": {
+        "domain": "g",
+        "date": "20261117",
+        "time": "0000",
+        "expver": "0001",
+        "class": "od",
+        "type": "pf",
+        "stream": "enfo",
+        "step": "3",
+        "levtype": "sfc",
+        "number": "1",
+        "param": "sp",
+        "_offset": 306154033,
+        "_length": 543474
+      }
+    },
+    {
+      "url": "https://data.ecmwf.int/forecasts/20261117/00z/ifs/0p25/enfo/20261117000000-3h-enfo-ef.index",
+      "message": {
+        "domain": "g",
+        "date": "20261117",
+        "time": "0000",
+        "expver": "0001",
+        "class": "od",
+        "type": "pf",
+        "stream": "enfo",
+        "step": "3",
+        "levtype": "sfc",
+        "number": "1",
+        "param": "10u",
+        "_offset": 323458983,
+        "_length": 631075
+      }
+    },
+    {
+      "url": "https://data.ecmwf.int/forecasts/20261117/00z/ifs/0p25/enfo/20261117000000-3h-enfo-ef.index",
+      "message": {
+        "domain": "g",
+        "date": "20261117",
+        "time": "0000",
+        "expver": "0001",
+        "class": "od",
+        "type": "pf",
+        "stream": "enfo",
+        "step": "3",
+        "levtype": "sfc",
+        "number": "1",
+        "param": "10v",
+        "_offset": 404457672,
+        "_length": 621299
+      }
+    },
+    {
+      "url": "https://data.ecmwf.int/forecasts/20261117/00z/ifs/0p25/enfo/20261117000000-3h-enfo-ef.index",
+      "message": {
+        "domain": "g",
+        "date": "20261117",
+        "time": "0000",
+        "expver": "0001",
+        "class": "od",
+        "type": "pf",
+        "stream": "enfo",
+        "step": "3",
+        "levtype": "sfc",
+        "number": "1",
+        "param": "2t",
+        "_offset": 411435134,
+        "_length": 315187
+      }
+    },
+    {
+      "url": "https://data.ecmwf.int/forecasts/20261117/00z/ifs/0p25/enfo/20261117000000-6h-enfo-ef.index",
+      "message": {
+        "domain": "g",
+        "date": "20261117",
+        "time": "0000",
+        "expver": "0001",
+        "class": "od",
+        "type": "pf",
+        "stream": "enfo",
+        "step": "6",
+        "levtype": "sfc",
+        "number": "1",
+        "param": "2d",
+        "_offset": 28660428,
+        "_length": 335476
+      }
+    },
+    {
+      "url": "https://data.ecmwf.int/forecasts/20261117/00z/ifs/0p25/enfo/20261117000000-6h-enfo-ef.index",
+      "message": {
+        "domain": "g",
+        "date": "20261117",
+        "time": "0000",
+        "expver": "0001",
+        "class": "od",
+        "type": "pf",
+        "stream": "enfo",
+        "levtype": "sfc",
+        "number": "1",
+        "step": "6",
+        "param": "ssrd",
+        "_offset": 60737680,
+        "_length": 346497
+      }
+    },
+    {
+      "url": "https://data.ecmwf.int/forecasts/20261117/00z/ifs/0p25/enfo/20261117000000-6h-enfo-ef.index",
+      "message": {
+        "domain": "g",
+        "date": "20261117",
+        "time": "0000",
+        "expver": "0001",
+        "class": "od",
+        "type": "pf",
+        "stream": "enfo",
+        "levtype": "sfc",
+        "number": "1",
+        "step": "6",
+        "param": "strd",
+        "_offset": 221735082,
+        "_length": 613516
+      }
+    },
+    {
+      "url": "https://data.ecmwf.int/forecasts/20261117/00z/ifs/0p25/enfo/20261117000000-6h-enfo-ef.index",
+      "message": {
+        "domain": "g",
+        "date": "20261117",
+        "time": "0000",
+        "expver": "0001",
+        "class": "od",
+        "type": "pf",
+        "stream": "enfo",
+        "levtype": "sfc",
+        "number": "1",
+        "step": "6",
+        "param": "tp",
+        "_offset": 251869008,
+        "_length": 258869
+      }
+    },
+    {
+      "url": "https://data.ecmwf.int/forecasts/20261117/00z/ifs/0p25/enfo/20261117000000-6h-enfo-ef.index",
+      "message": {
+        "domain": "g",
+        "date": "20261117",
+        "time": "0000",
+        "expver": "0001",
+        "class": "od",
+        "type": "pf",
+        "stream": "enfo",
+        "step": "6",
+        "levtype": "sfc",
+        "number": "1",
+        "param": "sp",
+        "_offset": 300096584,
+        "_length": 543858
+      }
+    },
+    {
+      "url": "https://data.ecmwf.int/forecasts/20261117/00z/ifs/0p25/enfo/20261117000000-6h-enfo-ef.index",
+      "message": {
+        "domain": "g",
+        "date": "20261117",
+        "time": "0000",
+        "expver": "0001",
+        "class": "od",
+        "type": "pf",
+        "stream": "enfo",
+        "step": "6",
+        "levtype": "sfc",
+        "number": "1",
+        "param": "10u",
+        "_offset": 330418012,
+        "_length": 629420
+      }
+    },
+    {
+      "url": "https://data.ecmwf.int/forecasts/20261117/00z/ifs/0p25/enfo/20261117000000-6h-enfo-ef.index",
+      "message": {
+        "domain": "g",
+        "date": "20261117",
+        "time": "0000",
+        "expver": "0001",
+        "class": "od",
+        "type": "pf",
+        "stream": "enfo",
+        "step": "6",
+        "levtype": "sfc",
+        "number": "1",
+        "param": "10v",
+        "_offset": 404380965,
+        "_length": 619802
+      }
+    },
+    {
+      "url": "https://data.ecmwf.int/forecasts/20261117/00z/ifs/0p25/enfo/20261117000000-6h-enfo-ef.index",
+      "message": {
+        "domain": "g",
+        "date": "20261117",
+        "time": "0000",
+        "expver": "0001",
+        "class": "od",
+        "type": "pf",
+        "stream": "enfo",
+        "step": "6",
+        "levtype": "sfc",
+        "number": "1",
+        "param": "2t",
+        "_offset": 429962540,
+        "_length": 314445
+      }
+    }
+  ],
+  "expected_canonical": {
+    "10u": {
+      "name": "eastward_wind",
+      "shape": [
+        2,
+        3,
+        7,
+        9
+      ],
+      "units": "m s-1",
+      "values_sha256": "563489cb2d1a5426400cd51f4f29c70167ad9f4f72a99bd21d9e65b712353797",
+      "valid_time_bounds_sha256": "33c733a55952d95c5316e5ce53e9c5c6d5faef6006d237eab1099cce9b12653a",
+      "minimum": -1.1884002685546875,
+      "maximum": 8.932861328125,
+      "observed_grib_encodings": [
+        {
+          "dataType": "fc",
+          "edition": 2,
+          "generatingProcessIdentifier": 161,
+          "seasonal_system": null,
+          "stream": "oper",
+          "tablesVersion": 32
+        },
+        {
+          "dataType": "pf",
+          "edition": 2,
+          "generatingProcessIdentifier": 161,
+          "seasonal_system": null,
+          "stream": "enfo",
+          "tablesVersion": 32
+        }
+      ]
+    },
+    "10v": {
+      "name": "northward_wind",
+      "shape": [
+        2,
+        3,
+        7,
+        9
+      ],
+      "units": "m s-1",
+      "values_sha256": "05ee9880ce0920099cee889ff743c6dccde229945590fcab0c55a7377510a081",
+      "valid_time_bounds_sha256": "33c733a55952d95c5316e5ce53e9c5c6d5faef6006d237eab1099cce9b12653a",
+      "minimum": 0.480377197265625,
+      "maximum": 13.113037109375,
+      "observed_grib_encodings": [
+        {
+          "dataType": "fc",
+          "edition": 2,
+          "generatingProcessIdentifier": 161,
+          "seasonal_system": null,
+          "stream": "oper",
+          "tablesVersion": 32
+        },
+        {
+          "dataType": "pf",
+          "edition": 2,
+          "generatingProcessIdentifier": 161,
+          "seasonal_system": null,
+          "stream": "enfo",
+          "tablesVersion": 32
+        }
+      ]
+    },
+    "2d": {
+      "name": "dew_point_temperature",
+      "shape": [
+        2,
+        3,
+        7,
+        9
+      ],
+      "units": "K",
+      "values_sha256": "0ef0152842765ec7f2f8a31744d88afcf0dfe67bc387297ee8a2f7c086feb36b",
+      "valid_time_bounds_sha256": "33c733a55952d95c5316e5ce53e9c5c6d5faef6006d237eab1099cce9b12653a",
+      "minimum": 285.01133728027344,
+      "maximum": 291.7137451171875,
+      "observed_grib_encodings": [
+        {
+          "dataType": "fc",
+          "edition": 2,
+          "generatingProcessIdentifier": 161,
+          "seasonal_system": null,
+          "stream": "oper",
+          "tablesVersion": 32
+        },
+        {
+          "dataType": "pf",
+          "edition": 2,
+          "generatingProcessIdentifier": 161,
+          "seasonal_system": null,
+          "stream": "enfo",
+          "tablesVersion": 32
+        }
+      ]
+    },
+    "2t": {
+      "name": "air_temperature",
+      "shape": [
+        2,
+        3,
+        7,
+        9
+      ],
+      "units": "K",
+      "values_sha256": "0be7ffc439adc9cd2838b145802fa0206c8cbadb6e291d4b843f42f2d4d73635",
+      "valid_time_bounds_sha256": "33c733a55952d95c5316e5ce53e9c5c6d5faef6006d237eab1099cce9b12653a",
+      "minimum": 285.6983337402344,
+      "maximum": 292.6983337402344,
+      "observed_grib_encodings": [
+        {
+          "dataType": "fc",
+          "edition": 2,
+          "generatingProcessIdentifier": 161,
+          "seasonal_system": null,
+          "stream": "oper",
+          "tablesVersion": 32
+        },
+        {
+          "dataType": "pf",
+          "edition": 2,
+          "generatingProcessIdentifier": 161,
+          "seasonal_system": null,
+          "stream": "enfo",
+          "tablesVersion": 32
+        }
+      ]
+    },
+    "sp": {
+      "name": "surface_air_pressure",
+      "shape": [
+        2,
+        3,
+        7,
+        9
+      ],
+      "units": "Pa",
+      "values_sha256": "fb1357acee78bb95edb923bdc44aac9b193ed01adf9f5b551140f46cd8c281f1",
+      "valid_time_bounds_sha256": "33c733a55952d95c5316e5ce53e9c5c6d5faef6006d237eab1099cce9b12653a",
+      "minimum": 91381.01171875,
+      "maximum": 101581.5390625,
+      "observed_grib_encodings": [
+        {
+          "dataType": "fc",
+          "edition": 2,
+          "generatingProcessIdentifier": 161,
+          "seasonal_system": null,
+          "stream": "oper",
+          "tablesVersion": 32
+        },
+        {
+          "dataType": "pf",
+          "edition": 2,
+          "generatingProcessIdentifier": 161,
+          "seasonal_system": null,
+          "stream": "enfo",
+          "tablesVersion": 32
+        }
+      ]
+    },
+    "ssrd": {
+      "name": "surface_downwelling_shortwave_flux_in_air",
+      "shape": [
+        2,
+        2,
+        7,
+        9
+      ],
+      "units": "W m-2",
+      "values_sha256": "d263c7c60b6f980623510b23a02228fd669b558f1957db7883b706b247133c92",
+      "valid_time_bounds_sha256": "0022b35b91b57463c422cb8847bcfb0d10f9d5bdcd85325ac00b1e80cc446642",
+      "minimum": 0.0,
+      "maximum": 0.0,
+      "observed_grib_encodings": [
+        {
+          "dataType": "fc",
+          "edition": 2,
+          "generatingProcessIdentifier": 161,
+          "seasonal_system": null,
+          "stream": "oper",
+          "tablesVersion": 32
+        },
+        {
+          "dataType": "pf",
+          "edition": 2,
+          "generatingProcessIdentifier": 161,
+          "seasonal_system": null,
+          "stream": "enfo",
+          "tablesVersion": 32
+        }
+      ]
+    },
+    "strd": {
+      "name": "surface_downwelling_longwave_flux_in_air",
+      "shape": [
+        2,
+        2,
+        7,
+        9
+      ],
+      "units": "W m-2",
+      "values_sha256": "401e0845615a2f464e9e113d52372a117198d2b4b20cc86206adcd8a892550ca",
+      "valid_time_bounds_sha256": "0022b35b91b57463c422cb8847bcfb0d10f9d5bdcd85325ac00b1e80cc446642",
+      "minimum": 374.4803703703704,
+      "maximum": 410.30577546296297,
+      "observed_grib_encodings": [
+        {
+          "dataType": "fc",
+          "edition": 2,
+          "generatingProcessIdentifier": 161,
+          "seasonal_system": null,
+          "stream": "oper",
+          "tablesVersion": 32
+        },
+        {
+          "dataType": "pf",
+          "edition": 2,
+          "generatingProcessIdentifier": 161,
+          "seasonal_system": null,
+          "stream": "enfo",
+          "tablesVersion": 32
+        }
+      ]
+    },
+    "tp": {
+      "name": "precipitation_flux",
+      "shape": [
+        2,
+        2,
+        7,
+        9
+      ],
+      "units": "kg m-2 s-1",
+      "values_sha256": "5aeb34b38618de68214ffa2beac6a5ccb5050bd86dfd73aac8db0a68768397b1",
+      "valid_time_bounds_sha256": "0022b35b91b57463c422cb8847bcfb0d10f9d5bdcd85325ac00b1e80cc446642",
+      "minimum": 0.0,
+      "maximum": 0.0008816189236111111,
+      "observed_grib_encodings": [
+        {
+          "dataType": "fc",
+          "edition": 2,
+          "generatingProcessIdentifier": 161,
+          "seasonal_system": null,
+          "stream": "oper",
+          "tablesVersion": 32
+        },
+        {
+          "dataType": "pf",
+          "edition": 2,
+          "generatingProcessIdentifier": 161,
+          "seasonal_system": null,
+          "stream": "enfo",
+          "tablesVersion": 32
+        }
+      ]
+    }
+  }
+}

@@ -84,6 +84,13 @@ def build_parser() -> argparse.ArgumentParser:
             command.add_argument("--model", required=True, choices=("summa", "mizuroute", "fluxos"))
         if name == "validate":
             command.add_argument("--installation-id", type=UUID)
+    from .data_arguments import add_data_arguments
+    from .data_commands import run_data
+
+    data = groups.add_parser("data", help="Acquire and prepare ECMWF forecast forcings")
+    add_data_arguments(data)
+    _add_output_arguments(data)
+    data.set_defaults(handler=run_data)
     return root
 
 

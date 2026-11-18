@@ -1,0 +1,89 @@
+{
+  "repository": "symfluence-org/SYMFLUENCE",
+  "commit": "df9b6447080b85ec6566dc7ad4ed901a623ad0bc",
+  "inspection_method": "GitHub connector at the exact pinned commit",
+  "entire_data_tree_read": false,
+  "files": [
+    {
+      "path": "src/symfluence/data/base_registry.py",
+      "git_blob_sha": "b457b35776ba68fd5f58c63c17045ced8268e794",
+      "inspected_scope": "full"
+    },
+    {
+      "path": "src/symfluence/data/data_manager.py",
+      "git_blob_sha": "c72cb5ef93b77ca037649cd7eb196e9603841571",
+      "inspected_scope": "partial: facade, service initialization, acquisition/preprocessing delegation; not every body"
+    },
+    {
+      "path": "src/symfluence/data/path_manager.py",
+      "git_blob_sha": "aeb325b85a4562463866f0a68b84781c1c8467b8",
+      "inspected_scope": "lines 1-180"
+    },
+    {
+      "path": "src/symfluence/data/acquisition/base.py",
+      "git_blob_sha": "5917bb7b60d250803dc885749a543b762ac4a8f1",
+      "inspected_scope": "full"
+    },
+    {
+      "path": "src/symfluence/data/acquisition/registry.py",
+      "git_blob_sha": "80e6dfb9608e49ccc2d06f7a3236346fa450bd55",
+      "inspected_scope": "full"
+    },
+    {
+      "path": "src/symfluence/data/acquisition/acquisition_service.py",
+      "git_blob_sha": "8d10948480ea33e80403d8df868eb4d1bfb7658f",
+      "inspected_scope": "lines 1-200; not full service implementation"
+    },
+    {
+      "path": "src/symfluence/data/acquisition/cloud_downloader.py",
+      "git_blob_sha": "bab7290213864e27625aa3443dbe78c26db04b11",
+      "inspected_scope": "lines 1-235"
+    },
+    {
+      "path": "src/symfluence/data/acquisition/handlers/__init__.py",
+      "git_blob_sha": "7b7f3779e88c70c083301406eef52e3e63f49f6e",
+      "inspected_scope": "full"
+    },
+    {
+      "path": "src/symfluence/data/preprocessing/dataset_handlers/__init__.py",
+      "git_blob_sha": "53f7ec1fb067876424b9e85521d7157a1ca691bd",
+      "inspected_scope": "full, including requested import loop"
+    },
+    {
+      "path": "src/symfluence/data/preprocessing/dataset_handlers/dataset_registry.py",
+      "git_blob_sha": "bd4974ea85d50b126d800ea7e582b5707f34b10b",
+      "inspected_scope": "full"
+    },
+    {
+      "path": "src/symfluence/data/preprocessing/dataset_handlers/base_dataset.py",
+      "git_blob_sha": "c6ced9427b18b7a05fe5bf0d12ecb679f26b3a7a",
+      "inspected_scope": "lines 1-240"
+    },
+    {
+      "path": "src/symfluence/data/preprocessing/dataset_handlers/schema_dispatch.py",
+      "git_blob_sha": "48e6e60f05063cacf522e17e07095d7707451448",
+      "inspected_scope": "full"
+    },
+    {
+      "path": "src/symfluence/data/preprocessing/forcing_resampler.py",
+      "git_blob_sha": "b95ef0d4ab832d0a808f8f70749ef3116fdbe061",
+      "inspected_scope": "lines 1-370; not full remapping implementation"
+    }
+  ],
+  "target_base_repository": "ue-hydro/bur_pc_floodcast",
+  "target_base_commit": "39cd5511a0f85d778e11ec85e0289364449c4b15",
+  "target_dependency": "Stage 2 foundation overlay supplied earlier in this conversation",
+  "full_target_clone_available": false,
+  "scope": "Historical inspection record from the earlier forecast-data ZIP; not the current integrated-repository verification.",
+  "superseded_by": [
+    "docs/source-reuse.md",
+    "docs/runtime-source-reuse.json",
+    "docs/verification/TEST_REPORT.md"
+  ],
+  "current_integration": {
+    "full_target_clone_available": true,
+    "full_pinned_symfluence_clone_available": true,
+    "source_export_verified": true,
+    "runtime_ports_verified": true
+  }
+}

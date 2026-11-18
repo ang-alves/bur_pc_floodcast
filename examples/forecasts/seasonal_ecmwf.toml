@@ -1,0 +1,28 @@
+# ECMWF original-frequency seasonal data, not monthly means or anomalies.
+# System is intentionally explicit. Its availability must be checked in CDS.
+# CDS retrieves all members; the IDs below are a local selection, not a control label.
+domain_id = "forecast_demo"
+data_root = "../../data"
+
+[forecast]
+product = "seasonal_ecmwf"
+cycle = "2026-11-01T00:00:00Z"
+originating_centre = "ecmwf"
+# This explicit system pin also applies to future cycles; availability is checked by CDS.
+system = "51"
+members = [0, 1]
+
+[forecast.bbox]
+north = 42.0
+west = -10.0
+south = 36.0
+east = -6.0
+
+[forecast.fields]
+"2t" = [6, 12, 18, 24, 30, 36, 42, 48]
+"2d" = [6, 12, 18, 24, 30, 36, 42, 48]
+"10u" = [6, 12, 18, 24, 30, 36, 42, 48]
+"10v" = [6, 12, 18, 24, 30, 36, 42, 48]
+tp = [24, 48]
+ssrd = [24, 48]
+strd = [24, 48]

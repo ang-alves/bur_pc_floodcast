@@ -1,0 +1,72 @@
+{
+  "status": "passed",
+  "archive_candidate": {
+    "status": "passed",
+    "scope": "Extracted candidate repository; final delivery later adds only packaging evidence/documentation. Runtime source is unchanged.",
+    "source_tree": "51e78d4532f7d6dab661e763632ad8207e0c33bc",
+    "files_in_candidate": 388,
+    "source_reuse": {
+      "baseline_data_python_files": 205,
+      "baseline_files": 903,
+      "checked_architecture_references": 7,
+      "checked_diffs": 2,
+      "license": "GPL-3.0-or-later",
+      "network_used": false,
+      "runtime_imported": false,
+      "runtime_port_files": 18,
+      "source_commit": "df9b6447080b85ec6566dc7ad4ed901a623ad0bc",
+      "status": "verified",
+      "supplemental_source_files": 2
+    },
+    "offline_workflow": {
+      "transport": "recorded_ECMWF_spatial_subset_no_network",
+      "geometry": "synthetic_example_not_a_real_basin",
+      "hydrological_model_executed": false,
+      "run_id": "f85029fb-e2f9-43ad-93e4-f6b00a21e59c",
+      "status": "succeeded",
+      "steps": {
+        "acquire": "succeeded",
+        "normalize": "succeeded",
+        "remap": "succeeded",
+        "model_ready": "succeeded"
+      }
+    },
+    "runtime_import_source": "extracted repository src via explicit PYTHONPATH",
+    "network_used": false,
+    "tests_used_real_eccodes_and_easymore": true,
+    "no_hydrological_model_executed": true
+  },
+  "installed_wheel": {
+    "status": "passed",
+    "installed_wheel_runtime": true,
+    "runtime_origin": "floodcast/__init__.py",
+    "provider_plans": {
+      "ifs_medium_range": {
+        "product": "ifs_medium_range",
+        "parts": 16
+      },
+      "s2s_ecds": {
+        "product": "s2s_ecds",
+        "parts": 14
+      },
+      "seasonal_ecmwf": {
+        "product": "seasonal_ecmwf",
+        "parts": 7
+      },
+      "ifs_to_summa": {
+        "product": "ifs_medium_range",
+        "parts": 16
+      }
+    },
+    "scientific_facades_imported": true,
+    "network_used": false
+  },
+  "wheel_independent_inspection": {
+    "runtime_python_modules": 117,
+    "all_runtime_bytes_match_source": true,
+    "gpl_text_packaged": true,
+    "third_party_notices_packaged": true,
+    "no_credentials_or_private_result_files_found": true
+  },
+  "delivery_scope": "The final repository ZIP is generated from the reviewed Git tree. Package byte/inventory checks are repeated after archive creation; no runtime changes follow this candidate run."
+}
