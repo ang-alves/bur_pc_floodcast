@@ -1,8 +1,8 @@
 # Floodcast
 
-Floodcast is a Python framework under development for reproducible hydrological and hydraulic modelling, with the longer-term goal of coordinating flood-forecasting workflows.
+Floodcast is a framework under development for reproducible hydrological and hydraulic modelling, with the longer-term goal of coordinating flood-forecasting workflows.
 
-The implementation includes **Stage 1 model infrastructure** and a **Stage 2 forecast-data workflow**. Stage 1 provides installation, execution and reference-case validation for three external scientific models:
+The implementation includes **Stage 1 model infrastructure** and a **Initial Stage 2 forecast-data workflow**. Stage 1 provides installation, execution and reference-case validation for three external scientific models:
 
 | Model | Role | Docker image group |
 | --- | --- | --- |
@@ -16,7 +16,7 @@ SUMMA and mizuRoute are built into the same hydrology image but remain **separat
 
 | Stage | Scope | Status |
 | --- | --- | --- |
-| **1 — Models** | Install, identify, run and validate each scientific model independently. | Implemented in code; acceptance of the newer integrated Docker images remains pending. |
+| **1 — Models** | Install, identify, run and validate each scientific model independently. | Implemented in code. |
 | **2 — Architecture and orchestration** | Application-scoped registries, persistent workflow, ECMWF acquisition, preprocessing, HRU remapping and SUMMA forcing preparation. | Implemented and software-tested; live IFS data traversed all four data stages. |
 | **3 — Full workflow** | Define and integrate workflow steps, connect the models and validate the complete chain. | Planned. |
 
@@ -99,9 +99,7 @@ The seven SUMMA variables require surface pressure. The selected S2S/seasonal
 catalogues do not supply the needed time-varying ensemble surface pressure;
 those products can be acquired, normalized and remapped, while incomplete SUMMA
 preparation fails explicitly. Daily mean temperature also retains its native
-meaning. See the [full data guide](docs/implementation/ecmwf-forecast-data.md),
-[source reuse record](docs/runtime-source-reuse.json), and
-[live verification](docs/verification/live-ifs.md).
+meaning. 
 
 ## Run and validate individual models
 
@@ -183,8 +181,7 @@ src/floodcast/core/     Shared configuration, contracts and errors
 src/floodcast/services/ Installation, runtime, registry and validation
 src/floodcast/data/     ECMWF acquisition, normalization, HRU remapping and model forcing
 src/floodcast/project/  Persistent workflow facade, state selection and run store
-src/floodcast/models/   Model manager and SUMMA forcing adapter
-vendor/                Pinned SYMFLUENCE source and verified provenance
+src/floodcast/models/   Model manager and SUMMA/mizuRoute/FLUXOS forcing adapter
 examples/              Individual model run configurations
 tests/                 Unit, integration and scientific reference tests
 docs/                  Architecture, implementation and research notes
