@@ -1,0 +1,298 @@
+{
+  "verification": "live ECMWF IFS acquisition bytes through complete forcing workflow",
+  "verification_script_sha256": "f362cd8ff7b59776a006772b52ba6d4018426eb8f1b63dea1731b5fdf0d81483",
+  "verified_at_utc": "2026-11-17T19:31:17.078958+00:00",
+  "python": "3.12.14",
+  "environment": {
+    "pydantic": "2.14.2",
+    "filelock": "3.32.7",
+    "numpy": "2.3.5",
+    "xarray": "2026.9.0",
+    "eccodes": "2.50.1",
+    "easymore": "2.0.0",
+    "geopandas": "1.2.0",
+    "netCDF4": "1.7.5.1.post1"
+  },
+  "status": "passed",
+  "source": {
+    "product": "ifs_medium_range",
+    "cycle": "2026-11-17T00:00:00+00:00",
+    "members": [
+      0,
+      1
+    ],
+    "fields": {
+      "2t": [
+        0,
+        3,
+        6
+      ],
+      "2d": [
+        0,
+        3,
+        6
+      ],
+      "10u": [
+        0,
+        3,
+        6
+      ],
+      "10v": [
+        0,
+        3,
+        6
+      ],
+      "sp": [
+        0,
+        3,
+        6
+      ],
+      "tp": [
+        3,
+        6
+      ],
+      "ssrd": [
+        3,
+        6
+      ],
+      "strd": [
+        3,
+        6
+      ]
+    },
+    "resolution": "0p25",
+    "selected_grid_shape": [
+      7,
+      9
+    ],
+    "grib_messages": 42,
+    "raw_assets": 16,
+    "raw_bytes": 20102931,
+    "provenance": {
+      "access": {
+        "availability_verified": false,
+        "client": "ecmwf-opendata",
+        "control_selection": {
+          "stream": "oper",
+          "type": "fc"
+        },
+        "dataset": null,
+        "delivery_grid": "0p25",
+        "distribution_profile": "open-data-2026-10-20",
+        "endpoint": null,
+        "notes": [
+          "These are distributed regular-grid products, not the native ~9 km model mesh.",
+          "Rolling-archive availability must be checked separately."
+        ],
+        "origin_field": "model",
+        "origin_value": "ifs",
+        "perturbed_selection": {
+          "stream": "enfo",
+          "type": "pf"
+        },
+        "product": "ifs_medium_range",
+        "seasonal_system": null
+      },
+      "model": {
+        "cycle_evidence": "documented_operational_timeline",
+        "hres_control_scientifically_identical": true,
+        "ifs_cycle": "50r1",
+        "policy_version": "ecmwf-source-reuse-review-2026-11-17",
+        "product": "ifs_medium_range",
+        "reference_time": "2026-11-17T00:00:00+00:00",
+        "seasonal_system": null,
+        "separate_hres_production": false
+      },
+      "policy_version": "ecmwf-source-reuse-review-2026-11-17",
+      "reviewed_through": "2026-11-17T23:59:59+00:00",
+      "source_code_commit": "df9b6447080b85ec6566dc7ad4ed901a623ad0bc"
+    },
+    "acquisition_manifest_sha256": "9445ca55316cd2287f21dd492c9a971ab89d592de9b6a47c9806d258f4915162",
+    "canonical_manifest_sha256": "0921444d81fb0b82f400fd2eb086f378def32e93abc6391b81ebdca2c98230a1"
+  },
+  "geometry": {
+    "type": "two synthetic verification rectangles, not a calibrated or real basin",
+    "hru_ids": [
+      501,
+      502
+    ],
+    "crs": "EPSG:4326",
+    "geometry_version": "synthetic-live-verification-v1",
+    "geojson_sha256": "2712ee31db09d0c4cfe3c871111c6ee5f2f171ff44a444a3a7bb9e6c5bf7de0e",
+    "coverage_fraction": [
+      1.0,
+      1.0
+    ]
+  },
+  "temporal_policy": {
+    "model": "SUMMA",
+    "timestep_seconds": 3600,
+    "start_lead_hour": 0,
+    "end_lead_hour": 6,
+    "instant_policy": "linear",
+    "interval_policy": "uniform",
+    "humidity_method": "symfluence_magnus_water"
+  },
+  "output": {
+    "interval_count": 6,
+    "forcing_implementation": "ffw-summa-forecast-forcing-v2-20261117",
+    "forcing_component_source_revision": "ffw-summa-forecast-forcing-v2-20261117",
+    "files": 4,
+    "forcing_variables": [
+      "LWRadAtm",
+      "SWRadAtm",
+      "airpres",
+      "airtemp",
+      "pptrate",
+      "spechum",
+      "windspd"
+    ],
+    "remapped_manifest_sha256": "39a02a649d25163e38c966a2686bdede1d1ec8a8a45544a7f0e5daf3ec586e9a",
+    "forcing_manifest_sha256": "8edb1577914a4661ef7bf43e7946718763a70a788c77df83b5a4ae2746620545",
+    "files_sha256": {
+      "member-0000/forcing.nc": "2af1eed8f40e24e2a050fd7684d3707f4c343818c451f9630d036244c378db05",
+      "member-0000/forcingFileList.txt": "a9557e249ecc49a0898def6e7c09de48f8193ddf93b011d5172e6a5e0d5c39da",
+      "member-0001/forcing.nc": "6a481868b244dd3dd47366a24c25f75c84035940ceb899c3a8f6b91b5db1b183",
+      "member-0001/forcingFileList.txt": "a9557e249ecc49a0898def6e7c09de48f8193ddf93b011d5172e6a5e0d5c39da"
+    }
+  },
+  "integral_conservation": {
+    "tp": {
+      "units": "kg m-2 (mm water)",
+      "rtol": 1e-06,
+      "atol": 1e-08,
+      "values": [
+        {
+          "member": 0,
+          "hru_id": 501,
+          "native_integral": 7.906657224521041,
+          "hourly_integral": 7.906657224521041,
+          "absolute_difference": 0.0
+        },
+        {
+          "member": 0,
+          "hru_id": 502,
+          "native_integral": 10.009839024860412,
+          "hourly_integral": 10.009839024860412,
+          "absolute_difference": 0.0
+        },
+        {
+          "member": 1,
+          "hru_id": 501,
+          "native_integral": 6.496309814974666,
+          "hourly_integral": 6.496309814974666,
+          "absolute_difference": 0.0
+        },
+        {
+          "member": 1,
+          "hru_id": 502,
+          "native_integral": 8.76505128107965,
+          "hourly_integral": 8.76505128107965,
+          "absolute_difference": 0.0
+        }
+      ],
+      "maximum_absolute_difference": 0.0
+    },
+    "ssrd": {
+      "units": "J m-2",
+      "rtol": 1e-06,
+      "atol": 1e-08,
+      "values": [
+        {
+          "member": 0,
+          "hru_id": 501,
+          "native_integral": 0.0,
+          "hourly_integral": 0.0,
+          "absolute_difference": 0.0
+        },
+        {
+          "member": 0,
+          "hru_id": 502,
+          "native_integral": 0.0,
+          "hourly_integral": 0.0,
+          "absolute_difference": 0.0
+        },
+        {
+          "member": 1,
+          "hru_id": 501,
+          "native_integral": 0.0,
+          "hourly_integral": 0.0,
+          "absolute_difference": 0.0
+        },
+        {
+          "member": 1,
+          "hru_id": 502,
+          "native_integral": 0.0,
+          "hourly_integral": 0.0,
+          "absolute_difference": 0.0
+        }
+      ],
+      "maximum_absolute_difference": 0.0
+    },
+    "strd": {
+      "units": "J m-2",
+      "rtol": 1e-06,
+      "atol": 1e-08,
+      "values": [
+        {
+          "member": 0,
+          "hru_id": 501,
+          "native_integral": 8699379.895019531,
+          "hourly_integral": 8699379.895019531,
+          "absolute_difference": 0.0
+        },
+        {
+          "member": 0,
+          "hru_id": 502,
+          "native_integral": 8510439.880371094,
+          "hourly_integral": 8510439.880371094,
+          "absolute_difference": 0.0
+        },
+        {
+          "member": 1,
+          "hru_id": 501,
+          "native_integral": 8713275.073242188,
+          "hourly_integral": 8713275.073242188,
+          "absolute_difference": 0.0
+        },
+        {
+          "member": 1,
+          "hru_id": 502,
+          "native_integral": 8515429.211425781,
+          "hourly_integral": 8515429.211425781,
+          "absolute_difference": 0.0
+        }
+      ],
+      "maximum_absolute_difference": 0.0
+    }
+  },
+  "spatial_precipitation_crosscheck": {
+    "method": "independent polygon intersections in EPSG:6933",
+    "rtol": 0.002,
+    "atol_kg_m2_s": 1e-10,
+    "maximum_absolute_difference_kg_m2_s": 1.4526143200625785e-11,
+    "maximum_relative_difference_nonzero": 3.1226985441890065e-08
+  },
+  "workflow": {
+    "run_id": "3c1d7cd6-b33d-4e4a-ada0-0271d9710401",
+    "steps": [
+      "acquire",
+      "normalize",
+      "remap",
+      "model_ready"
+    ],
+    "status": "succeeded",
+    "replay_status": "succeeded",
+    "manifest_unchanged_on_replay": true,
+    "additional_downloads": 0,
+    "manifest_sha256": "c9131cc0b8012f44e59553f5cd246d21fe349b0a668346f9815978e35d7b6f13"
+  },
+  "elapsed_seconds": 10.117060573999993,
+  "limitations": [
+    "Real ECMWF data; synthetic verification HRUs only.",
+    "Hourly states use explicit linear interpolation; native interval means use uniform redistribution.",
+    "No SUMMA, mizuRoute or FLUXOS executable was run.",
+    "No hydrological skill, calibrated basin, restart or operational warning performance was validated.",
+    "S2S and seasonal live authenticated acquisition are outside this verification."
+  ]
+}

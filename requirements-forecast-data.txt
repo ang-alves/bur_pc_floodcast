@@ -1,0 +1,3 @@
+# Run from the repository root. Canonical extra is maintained in pyproject.toml.
+# Compatible dependency bounds, not a cross-platform lock.
+.[forecast]

@@ -7,11 +7,31 @@ name = "floodcast"
 version = "0.0.1.dev1"
 description = "A framework for reproducible flood forecasting workflows"
 requires-python = ">=3.12,<3.15"
+license-files = ["LICENSES/*.txt", "THIRD_PARTY_NOTICES*.md"]
 # Canonical Python runtime dependencies for both Conda + pip and Pixi.
 # Pixi records its transitive versions and artifacts in pixi.lock; pip does not read it.
 dependencies = [
     "filelock==3.32.7",
     "pydantic==2.14.2",
+]
+
+[project.optional-dependencies]
+forecast = [
+    "numpy>=2,<3",
+    "pandas>=2.2,<3",
+    "scipy>=1.14,<2",
+    "xarray>=2025.1,<2027",
+    "netCDF4>=1.7,<2",
+    "h5netcdf>=1.4,<2",
+    "h5py>=3.11,<4",
+    "eccodes>=2.40,<3",
+    "ecmwf-opendata>=0.3.35,<0.4",
+    "cdsapi>=0.7.7,<0.8",
+    "geopandas>=1,<2",
+    "shapely>=2,<3",
+    "pyproj>=3.6,<4",
+    "easymore==2.0.0",
+    "tqdm>=4.66,<5",
 ]
 
 [project.scripts]
@@ -61,12 +81,13 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests/unit"]
 pythonpath = ["tests"]
-addopts = "-ra --strict-markers"
+addopts = "-ra --strict-markers --import-mode=importlib"
 markers = ["docker: requires an explicitly enabled Docker integration environment"]
 
 [tool.ruff]
 target-version = "py312"
 line-length = 100
+force-exclude = true
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
@@ -77,3 +98,14 @@ known-first-party = ["floodcast", "helpers"]
 [tool.ruff.lint.per-file-ignores]
 # Keep audited upstream C++ match/replacement strings byte-for-byte intact.
 "scripts/patch_fluxos.py" = ["E501"]
+# Keep these pinned upstream modules unchanged except for documented imports.
+"src/floodcast/data/_upstream/era5_processing.py" = ["E501", "I", "UP"]
+"src/floodcast/core/modeling/forcing_adapter.py" = ["E501", "I", "UP"]
+"src/floodcast/models/summa/forcing_adapter.py" = ["E501", "I", "UP"]
+
+[tool.ruff.format]
+exclude = [
+    "src/floodcast/data/_upstream/era5_processing.py",
+    "src/floodcast/core/modeling/forcing_adapter.py",
+    "src/floodcast/models/summa/forcing_adapter.py",
+]

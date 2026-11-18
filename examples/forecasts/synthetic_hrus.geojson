@@ -1,0 +1,16 @@
+{
+  "type": "FeatureCollection",
+  "name": "Synthetic polygons for software verification; not a real basin",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {"hruId": 101, "purpose": "synthetic_example"},
+      "geometry": {"type": "Polygon", "coordinates": [[[-9.25,39.25],[-8.75,39.25],[-8.75,39.75],[-9.25,39.75],[-9.25,39.25]]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"hruId": 202, "purpose": "synthetic_example"},
+      "geometry": {"type": "Polygon", "coordinates": [[[-8.75,39.5],[-8.0,39.5],[-8.0,40.25],[-8.75,40.25],[-8.75,39.5]]]}
+    }
+  ]
+}

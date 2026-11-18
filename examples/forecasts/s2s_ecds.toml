@@ -1,0 +1,27 @@
+# Delayed S2S archive, not the current medium-range IFS cycle.
+# Selected members are retained locally; ECDS retrieves every perturbed member.
+domain_id = "forecast_demo"
+data_root = "../../data"
+
+[forecast]
+product = "s2s_ecds"
+cycle = "2026-11-01T00:00:00Z"
+originating_centre = "ecmwf"
+# Future cycles require this reviewed profile and a matching native GRIB model ID.
+expected_ifs_cycle = "50r1"
+members = [0, 1]
+
+[forecast.bbox]
+north = 42.0
+west = -10.0
+south = 36.0
+east = -6.0
+
+[forecast.fields]
+"2t" = [24, 48]
+"2d" = [24, 48]
+"10u" = [6, 12, 18, 24, 30, 36, 42, 48]
+"10v" = [6, 12, 18, 24, 30, 36, 42, 48]
+tp = [6, 12, 18, 24, 30, 36, 42, 48]
+ssrd = [24, 48]
+strd = [24, 48]

@@ -54,8 +54,17 @@ def build_profile() -> dict:
                 fixture = ROOT / f"tests/fixtures/{model}/{fixture_case}"
                 metadata_path = fixture / "metadata.json"
                 expected_path = fixture / "expected.json"
+                # Path comparison folds case on Windows but not on POSIX.
+                # Preserve the recorded ordering explicitly on either platform.
                 files = (
-                    sorted(path for path in (fixture / "data").rglob("*") if path.is_file()) + files
+                    sorted(
+                        (path for path in (fixture / "data").rglob("*") if path.is_file()),
+                        key=lambda path: (
+                            tuple(part.casefold() for part in path.parts),
+                            path.parts,
+                        ),
+                    )
+                    + files
                 )
                 mounts.insert(
                     0,

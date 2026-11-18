@@ -1,0 +1,281 @@
+{
+  "scope": "Actual IFS Open Data acquisition + native GRIB decode + canonical normalization; offline replay exactness",
+  "status": "passed",
+  "forecast_cycle": "2026-11-17T00:00:00Z",
+  "members": [
+    0,
+    1
+  ],
+  "source_request_sha256": "c625bfcd4bb036ec2cf35510075fdf2f138e348686f695f2724c66dcf9756929",
+  "original_bytes": 20102931,
+  "assets": 16,
+  "messages": 42,
+  "variables": {
+    "10u": {
+      "name": "eastward_wind",
+      "shape": [
+        2,
+        3,
+        7,
+        9
+      ],
+      "units": "m s-1",
+      "values_sha256": "563489cb2d1a5426400cd51f4f29c70167ad9f4f72a99bd21d9e65b712353797",
+      "valid_time_bounds_sha256": "33c733a55952d95c5316e5ce53e9c5c6d5faef6006d237eab1099cce9b12653a",
+      "minimum": -1.1884002685546875,
+      "maximum": 8.932861328125,
+      "observed_grib_encodings": [
+        {
+          "dataType": "fc",
+          "edition": 2,
+          "generatingProcessIdentifier": 161,
+          "seasonal_system": null,
+          "stream": "oper",
+          "tablesVersion": 32
+        },
+        {
+          "dataType": "pf",
+          "edition": 2,
+          "generatingProcessIdentifier": 161,
+          "seasonal_system": null,
+          "stream": "enfo",
+          "tablesVersion": 32
+        }
+      ]
+    },
+    "10v": {
+      "name": "northward_wind",
+      "shape": [
+        2,
+        3,
+        7,
+        9
+      ],
+      "units": "m s-1",
+      "values_sha256": "05ee9880ce0920099cee889ff743c6dccde229945590fcab0c55a7377510a081",
+      "valid_time_bounds_sha256": "33c733a55952d95c5316e5ce53e9c5c6d5faef6006d237eab1099cce9b12653a",
+      "minimum": 0.480377197265625,
+      "maximum": 13.113037109375,
+      "observed_grib_encodings": [
+        {
+          "dataType": "fc",
+          "edition": 2,
+          "generatingProcessIdentifier": 161,
+          "seasonal_system": null,
+          "stream": "oper",
+          "tablesVersion": 32
+        },
+        {
+          "dataType": "pf",
+          "edition": 2,
+          "generatingProcessIdentifier": 161,
+          "seasonal_system": null,
+          "stream": "enfo",
+          "tablesVersion": 32
+        }
+      ]
+    },
+    "2d": {
+      "name": "dew_point_temperature",
+      "shape": [
+        2,
+        3,
+        7,
+        9
+      ],
+      "units": "K",
+      "values_sha256": "0ef0152842765ec7f2f8a31744d88afcf0dfe67bc387297ee8a2f7c086feb36b",
+      "valid_time_bounds_sha256": "33c733a55952d95c5316e5ce53e9c5c6d5faef6006d237eab1099cce9b12653a",
+      "minimum": 285.01133728027344,
+      "maximum": 291.7137451171875,
+      "observed_grib_encodings": [
+        {
+          "dataType": "fc",
+          "edition": 2,
+          "generatingProcessIdentifier": 161,
+          "seasonal_system": null,
+          "stream": "oper",
+          "tablesVersion": 32
+        },
+        {
+          "dataType": "pf",
+          "edition": 2,
+          "generatingProcessIdentifier": 161,
+          "seasonal_system": null,
+          "stream": "enfo",
+          "tablesVersion": 32
+        }
+      ]
+    },
+    "2t": {
+      "name": "air_temperature",
+      "shape": [
+        2,
+        3,
+        7,
+        9
+      ],
+      "units": "K",
+      "values_sha256": "0be7ffc439adc9cd2838b145802fa0206c8cbadb6e291d4b843f42f2d4d73635",
+      "valid_time_bounds_sha256": "33c733a55952d95c5316e5ce53e9c5c6d5faef6006d237eab1099cce9b12653a",
+      "minimum": 285.6983337402344,
+      "maximum": 292.6983337402344,
+      "observed_grib_encodings": [
+        {
+          "dataType": "fc",
+          "edition": 2,
+          "generatingProcessIdentifier": 161,
+          "seasonal_system": null,
+          "stream": "oper",
+          "tablesVersion": 32
+        },
+        {
+          "dataType": "pf",
+          "edition": 2,
+          "generatingProcessIdentifier": 161,
+          "seasonal_system": null,
+          "stream": "enfo",
+          "tablesVersion": 32
+        }
+      ]
+    },
+    "sp": {
+      "name": "surface_air_pressure",
+      "shape": [
+        2,
+        3,
+        7,
+        9
+      ],
+      "units": "Pa",
+      "values_sha256": "fb1357acee78bb95edb923bdc44aac9b193ed01adf9f5b551140f46cd8c281f1",
+      "valid_time_bounds_sha256": "33c733a55952d95c5316e5ce53e9c5c6d5faef6006d237eab1099cce9b12653a",
+      "minimum": 91381.01171875,
+      "maximum": 101581.5390625,
+      "observed_grib_encodings": [
+        {
+          "dataType": "fc",
+          "edition": 2,
+          "generatingProcessIdentifier": 161,
+          "seasonal_system": null,
+          "stream": "oper",
+          "tablesVersion": 32
+        },
+        {
+          "dataType": "pf",
+          "edition": 2,
+          "generatingProcessIdentifier": 161,
+          "seasonal_system": null,
+          "stream": "enfo",
+          "tablesVersion": 32
+        }
+      ]
+    },
+    "ssrd": {
+      "name": "surface_downwelling_shortwave_flux_in_air",
+      "shape": [
+        2,
+        2,
+        7,
+        9
+      ],
+      "units": "W m-2",
+      "values_sha256": "d263c7c60b6f980623510b23a02228fd669b558f1957db7883b706b247133c92",
+      "valid_time_bounds_sha256": "0022b35b91b57463c422cb8847bcfb0d10f9d5bdcd85325ac00b1e80cc446642",
+      "minimum": 0.0,
+      "maximum": 0.0,
+      "observed_grib_encodings": [
+        {
+          "dataType": "fc",
+          "edition": 2,
+          "generatingProcessIdentifier": 161,
+          "seasonal_system": null,
+          "stream": "oper",
+          "tablesVersion": 32
+        },
+        {
+          "dataType": "pf",
+          "edition": 2,
+          "generatingProcessIdentifier": 161,
+          "seasonal_system": null,
+          "stream": "enfo",
+          "tablesVersion": 32
+        }
+      ]
+    },
+    "strd": {
+      "name": "surface_downwelling_longwave_flux_in_air",
+      "shape": [
+        2,
+        2,
+        7,
+        9
+      ],
+      "units": "W m-2",
+      "values_sha256": "401e0845615a2f464e9e113d52372a117198d2b4b20cc86206adcd8a892550ca",
+      "valid_time_bounds_sha256": "0022b35b91b57463c422cb8847bcfb0d10f9d5bdcd85325ac00b1e80cc446642",
+      "minimum": 374.4803703703704,
+      "maximum": 410.30577546296297,
+      "observed_grib_encodings": [
+        {
+          "dataType": "fc",
+          "edition": 2,
+          "generatingProcessIdentifier": 161,
+          "seasonal_system": null,
+          "stream": "oper",
+          "tablesVersion": 32
+        },
+        {
+          "dataType": "pf",
+          "edition": 2,
+          "generatingProcessIdentifier": 161,
+          "seasonal_system": null,
+          "stream": "enfo",
+          "tablesVersion": 32
+        }
+      ]
+    },
+    "tp": {
+      "name": "precipitation_flux",
+      "shape": [
+        2,
+        2,
+        7,
+        9
+      ],
+      "units": "kg m-2 s-1",
+      "values_sha256": "5aeb34b38618de68214ffa2beac6a5ccb5050bd86dfd73aac8db0a68768397b1",
+      "valid_time_bounds_sha256": "0022b35b91b57463c422cb8847bcfb0d10f9d5bdcd85325ac00b1e80cc446642",
+      "minimum": 0.0,
+      "maximum": 0.0008816189236111111,
+      "observed_grib_encodings": [
+        {
+          "dataType": "fc",
+          "edition": 2,
+          "generatingProcessIdentifier": 161,
+          "seasonal_system": null,
+          "stream": "oper",
+          "tablesVersion": 32
+        },
+        {
+          "dataType": "pf",
+          "edition": 2,
+          "generatingProcessIdentifier": 161,
+          "seasonal_system": null,
+          "stream": "enfo",
+          "tablesVersion": 32
+        }
+      ]
+    }
+  },
+  "ecmwf_opendata_version": "0.3.35",
+  "eccodes_python_version": "2.50.1",
+  "eccodes_native_version": "2.50.0",
+  "fixture_provenance": "tests/fixtures/ecmwf/ifs_20261117T00Z/provenance.json",
+  "not_executed": [
+    "Live authenticated ECDS S2S retrieval",
+    "Live authenticated seasonal CDS retrieval",
+    "Hydrological model executions",
+    "Forecast skill assessment"
+  ]
+}
